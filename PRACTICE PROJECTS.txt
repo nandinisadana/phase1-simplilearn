@@ -1,482 +1,1874 @@
+PRACTICE PROJECTS:
 
-PROJECT 1:
-Validation of user login:
-
-Dashboard
-package com.java.userlogin;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-@WebServlet("/dashboard")
-public class Dashboard extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-
-		response.setContentType("text/html");
-
-		HttpSession session = request.getSession();
-
-		PrintWriter out = response.getWriter();
-
-//		Check whether the session already exists
-		if ((session.getAttribute("userName") != null) && (session.getAttribute("userPassword") != null))  {
-
-			out.println("<h3>Welcome " + session.getAttribute("userName"));
-
-			out.println("<br> You are now logged in...</h3>");
-
-			out.println("<p><h4><a href='logout'>LOGOUT</a></h4>");
-		}
-
-		else {
-			response.sendRedirect("index.html");
-		}
-
-	}
-
-}
-
-
-
-
-
-
-
-Login
-
-
-package com.java.userlogin;
-import java.io.IOException;
-import java.io.PrintWriter;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-@WebServlet("/login")
-public class Login extends HttpServlet {
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//		Set the content type
-		response.setContentType("text/html");
-		
-//		Get the writer
-		PrintWriter out = response.getWriter();
-		
-//		Get the userName from the request
-		String uName = request.getParameter("userName");
-		String uPassword = request.getParameter("userPassword");
-		
-//		Get a reference to the HttpSession object
-		HttpSession theSession = request.getSession();
-		
-//		Validate the username
-		if(uName.trim().equals("admin_mp")  && uPassword.trim().equals("mphasis99")) {
-//			Save the username in the session
-			theSession.setAttribute("userName", uName);
-			theSession.setAttribute("userPassword", uPassword);
-//			Redirect to the Dashboard
-			response.sendRedirect("dashboard");
-			
-		}
-		else {
-			out.println("<font color='red'>Invalid username or Password...</font>");
-			RequestDispatcher dispatcher = request.getRequestDispatcher("index.html");
-			dispatcher.include(request, response);
-		}
-		
-
-	}
-
-}
-
-Logout
-
-package com.java.userlogin;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-@WebServlet("/logout")
-public class Logout extends HttpServlet {
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
-		
-		PrintWriter out = response.getWriter();
-		
-//		Invalidate the session here
-		request.getSession().invalidate();
-		
-		out.println("<h2>You are now logged out...<br>");
-		
-		out.println("<a href='index.html'>Login again</a>");
-	}
-
-}
-
-
-Validation of userlogin.html
-
-
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>User Login</title>
-</head>
-<body>
-<h1>User Login</h1>
-<hr>
-<form action="login">
-<input type="text" name="userName" placeholder="Your username"><br>
-<input type="password" name="userPassword" placeholder="Password"><br>
-<input type="submit" value="LOGIN">
-</form>
-</body>
-</html>
-
-
-
-
-2.PRODUCT DETAILS:
-
-package com.nandu.training;
-
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-@WebServlet("/app")
-public class Validation extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		
-		String pId = request.getParameter("productId");
-		String pName = request.getParameter("productName");
-		String pPrice = request.getParameter("productPrice");
-		
-		HttpSession theSession = request.getSession();
-		
-		theSession.setAttribute("pid", pId);
-		theSession.setAttribute("pname", pName);
-		theSession.setAttribute("pprice", pPrice);
-		
-		response.sendRedirect("display.jsp");
-		
-		
-	}
-
-}
-
-
-
-  Product.JSP
-
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="ISO-8859-1">
-<title>Product Details</title>
-</head>
-<body>
-
-<h1>Enter Product Details</h1>
-<hr>
-<form action="app">
-<input type="text" name="productId" placeholder="PRODUCT ID"><br>
-<input type="text" name="productName" placeholder="PRODUCT NAME"><br>
-<input type="text" name="productPrice" placeholder="PRODUCT PRICE"><br>
-<input type="submit" value="ENTER">
-</form>
-
-</body>
-</html>
-
-
-
-
-Product.jsp(2)
-
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="ISO-8859-1">
-<title>Display</title>
-</head>
-<body>
-
-<h1>Displaying the Product Details....</h1>
-<hr>
-<%= "Product Id : " + session.getAttribute("pid") %> <br> <br>
-
-<%= "Product Name : " + session.getAttribute("pname") %>  <br> <br>
-
-<%= "Product Price : " + session.getAttribute("pprice") %>
-
-
-</body>
-</html>
-
-
-3.ADDING A NEWFILE IN DATABASE:
-
-package com.nandu.training;
-
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-
-@javax.persistence.Entity
-@Table(name = "students")
-public class students {
-
-	public String getname() {
-		return getname();
-	}
-
-	public void setname(String name ) {
-		this.name = name;
-	}
-
-	public int gets_id() {
-		return s_id;
-	}
-
-	public void sets_id(int s_id) {
-		this.s_id = s_id;
-	}
-
-	public String gets_course() {
-		return s_course;
-	}
-
-	public void sets_course(String s_course) {
-		this.s_course = s_course;
-	}
-	public int getc_id() {
-		return c_id;
-	}
-
-	public void setc_id(int c_id) {
-		this.c_id = c_id;
-	}
-
-
-	@Id
-	@Column(name="c_id")
-	int c_id;
-	@Column(name = "s_course")
-	String s_course;
-	@Column(name = "s_id")
-	int s_id;
-	@Column(name="name")
-//	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	String name;
-	
-	
-	
-	
-
-	public students() {
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public String toString() {
-		return "Learner [learnerId=" + name + ", learnerName=" + s_id + ", learnerDomain=" + s_course+",courseid="+c_id
-				+ "]";
-	}
-
-	public students(String name,int s_id, String s_course,int c_id) {
-	
-		this.name = name;
-		this.s_id=s_id;
-		this.s_course=s_course;
-		this.c_id=c_id;
-//		this.learnerDomain = learnerDomain;
-	}
-	
-	
-	
-}
-
-package com.nandu.training;
-
-import java.util.List;
-
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-
-public class App 
-{
-    public static void main( String[] args )
-    {
-//        Get the SessionFactory
-    	SessionFactory factory = new Configuration()
-    								.configure("hibernate.cfg.xml")
-    								.addAnnotatedClass(students.class)
-    								.buildSessionFactory();
-    	
-//    	Get the Session
-    	Session theSession = factory.getCurrentSession();
-    	
-    	try {
-//    		Add a new learner
-    		students theLearner = new students("m.anil",109,"devops",1105);
-    		
-    		
-//    		Start the transaction
-    		theSession.beginTransaction();
-    		
-//    		Save the learner
-    		theSession.save(theLearner);
-    		
-//    		Commit the transaction
-    		theSession.getTransaction().commit();
-    		System.out.println("new students sucessfully inserted ");
-    		System.out.println("Learner id : " + theLearner.name);
-    		
-//    		Learner learner = theSession.get(Learner.class, 2);
-//    		
-//    		System.out.println("Learner details by id : " + learner);
-    		
+USER AND UPDATING CODE:
  
-    		
-    		
-    		
-    	}finally {
-    		factory.close();
-    	}
-    }}
+Open pom.xml
+ 
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven- 4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<parent>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-parent</artifactId>
+<version>2.4.3</version>
+<relativePath /> <!-- lookup parent from repository -->
+</parent>
+<groupId>com.example</groupId>
+<artifactId>UserManager</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<name>UserManager</name>
+<description>Searching for a Specific User and Updating the User Information.</description>
+<properties>
+<java.version>1.8</java.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+<groupId>org.projectlombok</groupId>
+<artifactId>lombok</artifactId>
+<optional>true</optional>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-test</artifactId>
+<scope>test</scope>
+</dependency>
+<dependency>
+<groupId>org.apache.tomcat.embed</groupId>
+<artifactId>tomcat-embed-jasper</artifactId>
+<scope>provided</scope>
+</dependency>
+ 
+<dependency>
+<groupId>javax.xml.bind</groupId>
+<artifactId>jaxb-api</artifactId>
 
+</dependency>
+ 
+<dependency>
+<groupId>org.javassist</groupId>
+<artifactId>javassist</artifactId>
+<version>3.25.0-GA</version>
+</dependency>
+ 
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-devtools</artifactId>
+<scope>runtime</scope>
+<optional>true</optional>
+</dependency>
+</dependencies>
+ 
 
+<build>
 
+<plugins>
+<plugin>
 
-4.RETRIVING THE PRODUCT CODE:
+ 
+ 
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-maven-plugin</artifactId>
+<configuration>
+<excludes>
+<exclude>
+<groupId>org.projectlombok</groupId>
+<artifactId>lombok</artifactId>
+</exclude>
+</excludes>
+</configuration>
 
+ 
+ 
+</build>
+ 
+</project>
+ 
+ 
+ 
+ 
+ 
+ 
+Src/main/java
+</plugin>
+</plugins>
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+ 
+Create package com.example.UserManager Create UserManagerApplication.java package com.example.UserManager;
+import org.springframework.boot.SpringApplication;
+ 
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@WebServlet("/product")
-public class productid extends HttpServlet{
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-		String url="jdbc:mysql://localhost:3306/products";
-		String uname="root";
-		String pass="";
-		
-		response.setContentType("text/html");
-		
-		String pId = request.getParameter("productid");
-	
-		PrintWriter out = response.getWriter();
-		
-		String query="select * from product where p_id=?";
-		out.print("<h1>Displaying the Product Details...</h1>");
-		out.print("<table border='1'><tr><th>Product Id</th><th>Product Name</th><th>quantity</th><th>bill</th></tr>");
-		
-		try {
-	      Class.forName("com.mysql.cj.jdbc.Driver");
-	      Connection dbCon = DriverManager.getConnection(url, uname, pass);
-	      PreparedStatement st=  dbCon.prepareStatement(query);
-	      
-	      st.setString(1, pId);
-	      
-	      ResultSet rs =st.executeQuery();
-	      
-	      while(rs.next()) {
-	    	  
-	    	  out.print("<tr><td>");
-	    	  out.println(rs.getInt(1));
-	    	  out.print("</td>");
-	    	  out.print("<td>");
-	    	  out.print(rs.getString(2));
-	    	  out.print("</td>");
-	    	  out.print("<td>");
-	    	  out.print(rs.getInt(3));
-	    	  out.print("</td>");
-	    	  out.print("</tr>");
-	    
-	    	  
-			}
-	      
-		}
-		catch(Exception e){
-			
-			System.out.println("Some Issue : "+ e.getMessage());
-			
-			
-		}
-		
-		out.print("</table>");
-		
-	}
+@SpringBootApplication
+ 
+public class UserManagerApplication {
+ 
+public static void main(String[] args) { SpringApplication.run(UserManagerApplication.class, args);
+}
+ 
+}
+ 
+Create package com.example.UserManager.controller Create AppErrorController.java
+package com.example.UserManager.controller;
+ 
+import org.springframework.boot.web.servlet.error.ErrorController; import org.springframework.web.bind.annotation.RequestMapping; public class AppErrorController implements ErrorController { @RequestMapping("/error")
+public String handleError() {
+ 
+//do something like logging return "error";
+}
+ 
+@Override
+ 
+public String getErrorPath() { return null;
+}
+ 
+}
+ 
+Create MainController.java
+ 
+package com.example.UserManager.controller; import org.springframework.stereotype.Controller; import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import org.springframework.web.bind.annotation.RequestParam; @Controller
+public class MainController {
+ 
+@GetMapping(value = "/")
+ 
+public String showIndexPage(ModelMap model,
+ 
+@RequestParam(value = "name", required = false, defaultValue = "World") String name) { model.addAttribute("name", name);
+return "index";
+ 
+}
+ 
+}
+ 
+Create UserController.java
+ 
+package com.example.UserManager.controller; import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+ 
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+ 
+import org.springframework.web.bind.annotation.GetMapping; import org.springframework.web.bind.annotation.ModelAttribute; import org.springframework.web.bind.annotation.PostMapping; import org.springframework.web.bind.annotation.RequestMapping; import org.springframework.web.bind.annotation.RequestMethod; import org.springframework.web.bind.annotation.RequestParam; import com.example.UserManager.entities.User;
+import com.example.UserManager.services.UserService; @Controller
+public class UserController {
+
+//controls the functionality of the user entity @Autowired
+private UserService userService;
+ 
+Logger logger = LoggerFactory.getLogger(UserController.class); @GetMapping("/users")
+public String showUsers(ModelMap model) { logger.info("Getting all users");
+Iterable<User> users = userService.GetAllUsers(); logger.info("Passing users to view"); model.addAttribute("users", users );
+return "users";
+ 
+}
+ 
+@RequestMapping(value ="/search/{id}", method = RequestMethod.POST) public String searchUser(ModelMap model, @RequestParam("id") int id) {
+logger.info("Searching for a user");
+ 
+User user = userService.GetUserById(id); logger.info("Passing Searched User to View"); model.addAttribute("userSearch", user); return "search";
+}
+ 
+@PostMapping("search/update")
+ 
+public String updateUser(ModelMap model, @ModelAttribute("update") User user) { logger.info("Updating a User");
+userService.UpdateUser(user); model.addAttribute("updatedUser", user); return "update";
 }
 
+}
+ 
+Create UserExceptionController.java
+ 
+package com.example.UserManager.controller; import org.springframework.http.HttpStatus; import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice; import org.springframework.web.bind.annotation.ExceptionHandler; import com.example.UserManager.exceptions.UserNotFoundException; @ControllerAdvice
+public class UserExceptionController { @ExceptionHandler(value=UserNotFoundException.class)
+public ResponseEntity<Object> exception(UserNotFoundException ex) {
+ 
+return new ResponseEntity<>("Product not found", HttpStatus.NOT_FOUND);
+ 
+}
+ 
+}
+ 
+Create package com.example.UserManager.entities Create User.java
+package com.example.UserManager.entities; import javax.persistence.Entity;
+import javax.persistence.GeneratedValue; import javax.persistence.GenerationType; import javax.persistence.Id;
+@Entity
+ 
+public class User { //The Entity of a User; What it is. @Id
+@GeneratedValue(strategy=GenerationType.AUTO) private Integer id;
+
+private String name; private String email; private String password; public User() {
+super();
+ 
+}
+ 
+public User(Integer id, String name, String email, String password) { super();
+this.id = id; this.name = name; this.email = email;
+this.password = password;
+ 
+}
+ 
+public Integer getId() {
+ 
+return id;
+ 
+}
+ 
+public void setId(Integer id) { this.id = id;
+}
+ 
+public String getName() {
+ 
+return name;
+ 
+}
+ 
+public void setName(String name) { this.name = name;
+}
+ 
+public String getEmail() {
+ 
+return email;
+
+}
+ 
+public void setEmail(String email) { this.email = email;
+}
+ 
+public String getPassword() {
+ 
+return password;
+ 
+}
+ 
+public void setPassword(String password) { this.password = password;
+}
+ 
+@Override
+ 
+public String toString() {
+ 
+return (id.toString() + " " + name + " " + email + " " + password);
+ 
+}
+ 
+}
+ 
+Create package com.example.UserManager.exceptions Create UserNotFoundException.java
+package com.example.UserManager.exceptions;
+ 
+public class UserNotFoundException extends RuntimeException {
+private static final long serialVersionUID = 1L;
+}
+ 
+ 
+Create package com.example.UserManager.repositories Create UserRepository.java
+package com.example.UserManager.repositories;
+ 
+import org.springframework.data.repository.CrudRepository; import org.springframework.stereotype.Repository;
+import com.example.UserManager.entities.User;
+
+@Repository
+ 
+public interface UserRepository extends CrudRepository<User, Integer> { public User findByName(String name);
+}
+ 
+Create package com.example.UserManager.services Create UserService.java
+package com.example.UserManager.services; import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.stereotype.Service;
+import com.example.UserManager.entities.User;
+ 
+import com.example.UserManager.exceptions.UserNotFoundException; import com.example.UserManager.repositories.UserRepository; @Service
+public class UserService {
+ 
+@Autowired
+ 
+private UserRepository userRepository; public Iterable<User> GetAllUsers() { return userRepository.findAll();
+}
+ 
+public User GetUserByName(String name) { return userRepository.findByName(name);
+}
+ 
+public User GetUserById(Integer id) {
+ 
+Optional<User> foundUser = userRepository.findById(id); if(!foundUser.isPresent()) throw new UserNotFoundException(); return foundUser.get();
+
+}
+ 
+public User UpdateUser(User userToUpdate) { return userRepository.save(userToUpdate);
+}
+ 
+}
+ 
+Src/main/resources application.proprties
+spring.jpa.hibernate.ddl-auto=update spring.datasource.url=jdbc:mysql://localhost:3306/mywork spring.datasource.username=root spring.datasource.password=password logging.level.org.springframework.web: DEBUG spring.mvc.view.prefix=/WEB-INF/jsp/ spring.mvc.view.suffix=.jsp
+server.port=8080
+ 
+src/main/webapp/WEB-INF/jsp Create error.jsp
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Something went wrong! </h1>
+<h2>Our Engineers are on it</h2>
+<a href="/">Go Home</a>
+</body>
+</html>
+ 
+Create index.jsp
+ 
+<html>
+<body>
+<h2>Spring Application</h2>
+ 
+<h2 class="hello-title">Hello ${name}!</h2>
+<a href="users">List Users</a>
+<form action="search/{id}" method="post">
+Enter ID Number: <input name="id" type="text" id="id" placeholder="1" required/>
+<input name="Submit" type="submit"/>
+</form>
+ 
+</body>
+
+</html>
+Create search.jsp
+ 
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+pageEncoding="UTF-8"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+ 
+
+<html>
+<style>
+table {
+ 
+}
+ 
+th {
+ 
+ 
+}
+</style>
+<body>
+
+ 
+ 
+float: left;
+ 
+ 
+ 
+border-bottom: 1px solid black; text-align: left;
+
+ 
+<h2>Search for User</h2>
+ 
+
+<table>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+</table>
+
+<tr>
+ 
+ 
+ 
+ 
+</tr>
+<tr>
+ 
+ 
+ 
+ 
+</tr>
+
+ 
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Password</th>
+ 
+ 
+<td>${userSearch.id}</td>
+<td>${userSearch.name}</td>
+<td>${userSearch.email}</td>
+<td>${userSearch.password}</td>
+
+ 
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<form:form action="update" method="post" commandName="update">
+<h3>Update This User?</h3>
+<p>User ID: ${userSearch.id}</p>
+<input type="hidden" name="id" id="id" value="${userSearch.id}" required/>
+<label for="name">New Name:</label><br/>
+<input type="text" name="name" id="name" value="${userSearch.name}"
+required/><br/>
+
+ 
+ 
+required/><br/>
+<label for="email">New Email:</label> <br/>
+<input type="text" name="email" id="email" value="${userSearch.email}"
+ 
+<label for="password">New Password:</label><br/>
+<input type="text" name="password" id="password" value="${userSearch.password}"
+
+required/><br/><br/>
+ 
+</form:form>
+<br />
+<br />
+
+<input type="submit" value="Submit"/>
+
+ 
+</body>
+</html>
+<a href="/">Return to Menu</a>
+
+Create update.jsp
+ 
+<html>
+<body>
+<h2>Update Successful</h2>
+Updated User Credentials: ${updatedUser.toString()}
+<br/><br/>
+<a href="/">Return to Menu</a>
+</body>
+</html>
+ 
+Create users.jsp
+ 
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<html>
+<style> table { float: left;
+}
+ 
+table, th, td {
+border: 1px solid black;
+}
+</style>
+<head></head>
+<body>
+<h2>Users Page</h2>
+<table>
+<tr><th>ID</th><th>Name</th><th>Email</th><th>Password</th></tr>
+<c:forEach items="${users}" var="user" varStatus="count">
+<tr id="${count.index}">
+<td>${user.id}</td>
+<td>${user.name}</td>
+<td>${user.email}</td>
+<td>${user.password}</td>
+</tr>
+</c:forEach>
+</table>
+</body>
+
+</html>
+ 
+Pushing the code to your GitHub repositories:
+ 
+●Open your command prompt and navigate to the folder where you have created your files.
+ 
+cd <folder path>
+ 
+●Initialize your repository using the following command:
+ 
+git init
+ 
+●Add all the files to your git repository using the following command:
+ 
+git add .
+ 
+●Commit the changes using the following command:
+ 
+git commit . -m “Changes have been committed.”
+ 
+●Push the files to the folder you initially created using the following command:
+ 
+git push -u origin master
+
+
+PROJECT 2:
+
+USER FEEDBACK CODE
+ 
+ 
+ 
+ 
+ 
+ 
+Open pom.xml
+ 
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<parent>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-parent</artifactId>
+<version>2.4.3</version>
+<relativePath /> <!-- lookup parent from repository -->
+</parent>
+<groupId>com.project</groupId>
+<artifactId>Feedback</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<name>Feedback</name>
+<description>Create a Spring Boot project that will capture user feedback using a REST endpoint.
+The REST resource will take in parameters using HTTP POST. The feedback data will be then added to a database table.</description>
+<properties>
+<java.version>1.8</java.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-rest</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-jersey</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+ 
+ 
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-devtools</artifactId>
+<scope>runtime</scope>
+<optional>true</optional>
+</dependency>
+ 
+ 
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-test</artifactId>
+<scope>test</scope>
+</dependency>
+<dependency>
+<groupId>org.projectlombok</groupId>
+<artifactId>lombok</artifactId>
+<optional>true</optional>
+</dependency>
+<!-- this Dependency helps make sure that pathing works correct-->
+<dependency>
+<groupId>org.apache.tomcat.embed</groupId>
+<artifactId>tomcat-embed-jasper</artifactId>
+<scope>provided</scope>
+</dependency>
+
+ 
+<dependency>
+<groupId>javax.xml.bind</groupId>
+<artifactId>jaxb-api</artifactId>
+</dependency>
+ 
+ 
+<dependency>
+<groupId>org.javassist</groupId>
+<artifactId>javassist</artifactId>
+<version>3.25.0-GA</version>
+</dependency>
+ 
+ 
+ 
+</dependencies>
+ 
+ 
+
+<build>
+
+ 
+<plugins>
+<plugin>
+
+ 
+ 
+ 
+ 
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-maven-plugin</artifactId>
+
+ 
+ 
+ 
+</build>
+ 
+ 
+</project>
+ 
+ 
+ 
+src/main/java
+</plugin>
+</plugins>
+
+ 
+Create package com.project.Feedback package com.project.Feedback;
+import org.springframework.boot.SpringApplication;
+ 
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+ 
+public class FeedbackApplication { public static void main(String[] args) {
+SpringApplication.run(FeedbackApplication.class, args);
+ 
+}
+ 
+}
+ 
+Create package com.project.Feedback.controllers Create FeedbackController.java
+package com.project.Feedback.controllers;
+ 
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping; import org.springframework.web.bind.annotation.PostMapping; import org.springframework.web.bind.annotation.RequestBody; import org.springframework.web.bind.annotation.ResponseBody; import org.springframework.web.bind.annotation.RestController; import com.project.Feedback.entities.Feedback;
+import com.project.Feedback.services.FeedbackService; @RestController
+public class FeedbackController { @Autowired
+FeedbackService feedbackService;
+
+@GetMapping("/feedback")
+ 
+public Iterable<Feedback> getAllFeedbacks(){ return feedbackService.GetAllFeedback();
+}
+ 
+@PostMapping(path="/feedback", consumes= {MediaType.APPLICATION_JSON_VALUE}) public Feedback addNewFeedback(@RequestBody Feedback fb) {
+Feedback newFb = new Feedback(fb.getComments(), fb.getRating(), fb.getUser()); feedbackService.addNewFeedback(newFb);
+return newFb;
+ 
+}
+ 
+}
+ 
+Create TestFormController.java
+ 
+package com.project.Feedback.controllers;
+ 
+ 
+ 
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+ 
+import org.springframework.web.bind.annotation.GetMapping; import org.springframework.web.bind.annotation.ModelAttribute; import org.springframework.web.bind.annotation.PostMapping; import com.project.Feedback.entities.Feedback;
+import com.project.Feedback.services.FeedbackService; @Controller
+
+public class TestFormController {
+ 
+ 
+ 
+@Autowired
+ 
+FeedbackService feedbackService; @GetMapping("/test_form")
+public String showTestForm(ModelMap model) { model.addAttribute("test", new Feedback()); return "testformjsp";
+}
+ 
+@PostMapping("/test_form")
+ 
+public String submitTestForm(@ModelAttribute("testUser") Feedback fb, ModelMap m) { feedbackService.addNewFeedback(fb);
+m.addAttribute("test", fb);
+ 
+return "post";
+ 
+}
+ 
+//	TODO: Implement form submission
+ 
+//	TODO: call RestTemplate and make json request to localhost.../feedback
+ 
+}
+ 
+//RestTemplate restTemplate = new RestTemplate();
+ 
+//URL testForm = new URL("http://localhost:8090/feedbacks/{feedback}");
+ 
+//ResponseEntity<String> response = restTemplate.getForEntity(testForm + "/7", String.class);
+ 
+//ObjectMapper mapper = new ObjectMapper();
+ 
+//JsonNode root = mapper.readTree(response.getBody());
+
+//JsonNode name = root.path("name");
+ 
+//model.addAttribute(name);
+ 
+//String result = restTemplate.getForObject("http://localhost:8090/feedbacks/{feedback}", String.class, 7);
+ 
+ 
+ 
+Create package com.project.Feedback.repositories Create FeedbackRepository.java
+package com.project.Feedback.repositories;
+ 
+import org.springframework.data.repository.CrudRepository; import org.springframework.stereotype.Repository;
+import com.project.Feedback.entities.Feedback; @Repository
+public interface FeedbackRepository extends CrudRepository<Feedback, Integer> { public Feedback findByUser(String feedback);
+}
+ 
+Create package com.project.Feedback.entity Create Feedback.java
+package com.project.Feedback.entities; import javax.persistence.Column; import javax.persistence.Entity;
+import javax.persistence.GeneratedValue; import javax.persistence.GenerationType; import javax.persistence.Id;
+
+import javax.validation.constraints.NotNull; import lombok.Data;
+@Entity @Data
+public class Feedback { @Id
+@GeneratedValue(strategy = GenerationType.AUTO) @Column(name="id")
+@NotNull
+ 
+private Integer id; @Column(name="comments") private String comments; @Column(name="rating") @NotNull
+private int rating; @Column(name="user") private String user; public Feedback() {
+super();
+ 
+}
+ 
+public Feedback(String comments, Integer rating, String user) { this.comments = comments;
+this.rating = rating;
+
+this.user = user;
+ 
+}
+ 
+/*
+ 
+*Needed the setters and getters to be able to add name and comments otherwise
+ 
+*they are nulls when entering the SQL DB
+ 
+*/
+ 
+public String getComments() { return comments;
+}
+ 
+public void setComments(String comments) { this.comments = comments;
+}
+ 
+ 
+ 
+public Integer getRating() {
+ 
+return rating;
+ 
+}
+ 
+public void setRating(Integer rating) { this.rating = rating;
+}
+ 
+public String getUser() {
+ 
+return user;
+ 
+}
+ 
+public void setUser(String user) {
+
+this.user = user;
+ 
+}
+ 
+@Override
+ 
+public String toString() {
+ 
+return "Feedback [id=" + id + ", comments=" + comments + ", rating=" + rating + ", user=" + user + "]";
+ 
+}
+ 
+}
+ 
+Create package com.project.Feedback.services Create FeedbackService.java
+package com.project.Feedback.services;
+ 
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.stereotype.Service;
+import com.project.Feedback.entities.Feedback;
+ 
+import com.project.Feedback.repositories.FeedbackRepository;
+ 
+ 
+ 
+@Service
+ 
+public class FeedbackService { @Autowired
+FeedbackRepository feedbackRepo;
+ 
+public Iterable<Feedback> GetAllFeedback() { return feedbackRepo.findAll();
+}
+ 
+public Feedback addNewFeedback(Feedback fb) {
+
+return feedbackRepo.save(fb);
+ 
+}
+ 
+}
+ 
+Src/main/resources
+ 
+Create folder static and create testform.html and testform.js testform.html
+<!DOCTYPE html>
+<html>
+<head>
+<script src="testform.js">
+</script>
+</head>
+<body>
+<!-- This is a form that is used for testing on the client side using a client-side code form -->
+<h2>Feedback Test Form</h2>
+ 
+ 
+<form onsubmit="SubmitTestForm()">
+<label for="user">User:</label><br>
+<input type="text" id="user" name="user" placeholder="John"><br>
+<label for="comments">Comments:</label><br>
+<input type="text" id="comments" name="comments" placeholder="Doe"><br><br>
+<input type="submit" value="Submit">
+</form>
+ 
+ 
+<p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
+ 
+</body>
+</html>
+
+testform.js
+ 
+function SubmitTestForm() {
+ 
+ 
+//TODO: gather fields from form
+//TODO: Jsonify form fields
+//TODO: Call postFormDataAsJson to http://localhost:8090/your/endpoint alert("The form was submitted");
+}
+ 
+ 
+/**
+*Helper function for POSTing data as JSON with fetch.
+*
+*@param {Object} options
+*@param {string} options.url - URL to POST data to
+*@param {FormData} options.formData - `FormData` instance
+*@return {Object} - Response body from URL that was POSTed to
+*/
+async function postFormDataAsJson({ url, formData }) {
+/**
+*We can't pass the `FormData` instance directly to `fetch`
+*as that will cause it to automatically format the request
+*body as "multipart" and set the `Content-Type` request header
+*to `multipart/form-data`. We want to send the request body
+*as JSON, so we're converting it to a plain object and then
+*into a JSON string.
+*
+*@see https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
+*@see https://developer.mozilla.org/en- US/docs/Web/JavaScript/Reference/Global_Objects/Object/fromEntries
+*@see https://developer.mozilla.org/en- US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
+*/
+const plainFormData = Object.fromEntries(formData.entries());
+const formDataJsonString = JSON.stringify(plainFormData);
+
+ 
+const fetchOptions = {
+/**
+*The default method for a request with fetch is GET,
+*so we must tell it to use the POST HTTP method.
+*/
+method: "POST",
+/**
+*These headers will be added to the request and tell
+*the API that the request body is JSON and that we can
+*accept JSON responses.
+*/ headers: {
+"Content-Type": "application/json", "Accept": "application/json"
+},
+/**
+*The body of our POST request is the JSON string that
+*we created above.
+*/
+body: formDataJsonString,
+};
+ 
+ 
+const response = await fetch(url, fetchOptions);
+ 
+ 
+if (!response.ok) {
+const errorMessage = await response.text(); throw new Error(errorMessage);
+}
+ 
+ 
+return response.json();
+}
+ 
+application.properties
+ 
+spring.jpa.hibernate.ddl-auto=update
+
+spring.datasource.url=jdbc:mysql://localhost:3306/mywork spring.datasource.username=root spring.datasource.password=password
+ 
+logging.level.org.springframework.web: DEBUG spring.mvc.view.prefix=/WEB-INF/jsp/ spring.mvc.view.suffix=.jsp
+server.port=8080
+ 
+src/main/webapp/WEB-INF/jsp
+ 
+Create index.jsp
+ 
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<title>Welcome Page</title>
+</head>
+<h2>Landing Page</h2>
+<body>
+<a href="test_form">Test Form</a><br/><br/>
+<a href="feedback">See all Feedbacks</a><br/><br/>
+ 
+ 
+<!-- Can only use these (below) if you have jersey dependency -->
+<br/><br/>
+<p>Can only use these link below if you have the jersey dependency added to this dependency. Jersey has been added to this project so it can use the links below.</p>
+ 
+<a href="feedbacks">See all feedbacks as Json format</a><br/><br/>
+<a href="profile/feedbacks">See Json's in profile</a>
+</body>
+</html>
+ 
+Create post.jsp
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Post test</title>
 </head>
 <body>
-<h1 style="background-color:powderblue;">user credentials</h1>
-<form action="productid" method="post">
-  <input type="text" name="productid" placeholder="enter the productid">
-  <button>Submit</button>
-</form>
+Successfully added: ${testUser.toString()}
+</body>
+</html>
+ 
+Create testformjsp.jsp
+ 
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Spring test App</title>
+</head>
+<body>
+<form:form action="/test_form" method="post" commandName="testUser">
+<label for="user">User:</label><br>
+<input type="text" id="user" name="user" placeholder="John"><br>
+<label for="comments">Comments:</label><br>
+<input type="text" id="comments" name="comments" placeholder="Doe"><br><br>
+<input type="submit" value="Submit">
+<label for="rating">Rating:</label><br>
+ 
+ 
+<input type="range" name="rating" id="rating" min="0" max="10" value="5" class="slider">
+</form:form>
+</body>
+</html>
+ 
+Pushing the code to your GitHub repositories
 
+●Open your command prompt and navigate to the folder where you have created your files.
+ 
+cd <folder path>
+ 
+●Initialize your repository using the following command:
+ 
+git init
+ 
+●Add all the files to your git repository using the following command:
+ 
+git add .
+ 
+●Commit the changes using the following command:
+ 
+git commit . -m “Changes have been committed.”
+ 
+●Push the files to the folder you initially created using the following command:
+ 
+git push -u origin master
+
+
+
+PROJECT 3:
+
+HANDLING USER AUTHANTICATION CODE
+ 
+ 
+Open pom.xml add dependencies
+ 
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<parent>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-parent</artifactId>
+<version>2.4.3</version>
+<relativePath /> <!-- lookup parent from repository -->
+</parent>
+<groupId>com.project</groupId>
+<artifactId>Authentication</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<name>Authentication</name>
+<description>Demo project for Spring Boot</description>
+<properties>
+<java.version>1.8</java.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-jersey</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+ 
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-devtools</artifactId>
+<scope>runtime</scope>
+<optional>true</optional>
+</dependency>
+ 
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-test</artifactId>
+<scope>test</scope>
+</dependency>
+
+ 
+<dependency>
+<groupId>org.apache.tomcat.embed</groupId>
+<artifactId>tomcat-embed-jasper</artifactId>
+<scope>provided</scope>
+</dependency>
+ 
+<dependency>
+<groupId>javax.xml.bind</groupId>
+<artifactId>jaxb-api</artifactId>
+</dependency>
+ 
+<dependency>
+<groupId>org.javassist</groupId>
+<artifactId>javassist</artifactId>
+<version>3.25.0-GA</version>
+</dependency>
+<dependency>
+<groupId>javax.servlet</groupId>
+<artifactId>jstl</artifactId>
+<version>1.2</version>
+</dependency>
+<dependency>
+<groupId>org.projectlombok</groupId>
+<artifactId>lombok-maven-plugin</artifactId>
+<version>1.18.18.0</version>
+<type>maven-plugin</type>
+</dependency>
+ 
+<dependency>
+<groupId>com.h2database</groupId>
+<artifactId>h2</artifactId>
+<scope>runtime</scope>
+</dependency>
+</dependencies>
+ 
+
+<build>
+
+<plugins>
+<plugin>
+
+ 
+ 
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-maven-plugin</artifactId>
+<configuration>
+</configuration>
+
+</plugin>
+<plugin>
+
+ 
+ 
+ 
+ 
+ 
+</build>
+ 
+</project>
+<groupId>org.projectlombok</groupId>
+<artifactId>lombok-maven-plugin</artifactId>
+<version>1.18.18.0</version>
+</plugin>
+</plugins>
+
+ 
+ 
+Create package com.project.Authentication Create AuthenticationApplication.java package com.project.Authentication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+import com.project.Authentication.controllers.AuthenticationController;
+import com.project.Authentication.entities.User;
+import com.project.Authentication.exceptions.UserNotFoundException;
+import com.project.Authentication.services.AuthenticationService;
+ 
+@SpringBootApplication @Import({
+AuthenticationController.class, UserNotFoundException.class, AuthenticationService.class, User.class
+})
+public class AuthenticationApplication {
+ 
+public static void main(String[] args) { SpringApplication.run(AuthenticationApplication.class, args);
+}
+ 
+}
+ 
+Create package com.project.Authentication.controller Create AuthenticationController.java
+package com.project.Authentication.controllers; import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+ 
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping; import org.springframework.web.bind.annotation.PostMapping; import org.springframework.web.bind.annotation.RequestParam; import com.project.Authentication.entities.User;
+
+import com.project.Authentication.services.AuthenticationService; @Controller
+public class AuthenticationController {
+ 
+Logger logger = LoggerFactory.getLogger(AuthenticationController.class); @Autowired
+AuthenticationService authService; @GetMapping("/")
+public String showGreeting() { return "greeting";
+}
+ 
+@GetMapping("/Auth") public String showLogin() {
+return "authenticate";
+ 
+}
+ 
+@PostMapping("/Auth")
+ 
+public String authenticateUser(@RequestParam("username") String username, @RequestParam("password") String pswd) {
+ 
+User user = authService.GetUserByName(username); logger.info(user.getName() + " attempted to login with " + user.getPassword());
+String path = (authService.isValidPassword(pswd, user.getPassword())) ? "success" : "failure"; logger.info("The path return: " + path);
+return path;
+ 
+}
+ 
+}
+ 
+Create package com.project.Authentication.entities Crate User.java
+package com.project.Authentication.entities;
+
+ 
+ 
+import javax.persistence.Column; import javax.persistence.Entity;
+import javax.persistence.GeneratedValue; import javax.persistence.GenerationType; import javax.persistence.Id;
+import javax.persistence.Table;
+ 
+import javax.validation.constraints.NotNull;
+ 
+ 
+@Entity
+ 
+@Table(name = "user") public class User {
+ 
+ 
+@Id
+ 
+@GeneratedValue(strategy = GenerationType.AUTO) @NotNull
+private Integer id;
+ 
+ 
+@Column(name = "name") @NotNull
+private String name;
+ 
+ 
+@Column(name = "email") @NotNull
+private String email;
+ 
+ 
+@Column(name = "password") @NotNull
+private String password;
+
+ 
+ 
+public User() {
+ 
+super();
+ 
+}
+ 
+ 
+public User(@NotNull String name, @NotNull String password) { this.name = name;
+this.password = password;
+ 
+}
+ 
+ 
+public User(@NotNull String name, @NotNull String email, @NotNull String password) { super();
+this.name = name; this.email = email; this.password = password;
+}
+ 
+ 
+public Integer getId() {
+ 
+return id;
+ 
+}
+ 
+ 
+public void setId(Integer id) { this.id = id;
+}
+ 
+ 
+public String getName() {
+ 
+return name;
+ 
+}
+
+public void setName(String name) { this.name = name;
+}
+ 
+ 
+public String getEmail() {
+ 
+return email;
+ 
+}
+ 
+ 
+public void setEmail(String email) { this.email = email;
+}
+ 
+ 
+public String getPassword() {
+ 
+return password;
+ 
+}
+ 
+ 
+public void setPassword(String password) { this.password = password;
+}
+ 
+ 
+@Override
+ 
+public String toString() {
+ 
+return "User [id=" + id + ", name=" + name + ", email=" + email + ", password=" +
+password + "]";
+ 
+}
+ 
+}
+ 
+Create package com.project.Authentication.exceptions Create UserNotFoundException.java
+package com.project.Authentication.exceptions;
+
+public class UserNotFoundException extends RuntimeException {
+private static final long serialVersionUID = 1L;
+}
+Create package com.project.Authentication.repositories Create AuthenticationRepository.java
+package com.project.Authentication.repositories; import java.util.Optional;
+import org.springframework.data.repository.CrudRepository; import org.springframework.stereotype.Repository;
+import com.project.Authentication.entities.User; @Repository
+public interface AuthenticationRepository extends CrudRepository<User, Integer> { public Optional<User> findUserByName(String name);
+}
+ 
+Create package com.project.Authentication.services Create AuthenticationService.java
+package com.project.Authentication.services; import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.stereotype.Service;
+import com.project.Authentication.entities.User;
+ 
+import com.project.Authentication.exceptions.UserNotFoundException; import com.project.Authentication.repositories.AuthenticationRepository; @Service
+public class AuthenticationService { @Autowired AuthenticationRepository authRepo;
+public User GetUserByName(String name) {
+
+Optional<User> found = authRepo.findUserByName(name); if(found.isPresent()) return found.get();
+else throw new UserNotFoundException();
+ 
+}
+ 
+public Boolean isValidPassword(String cmp, String actual) { return ((cmp.equals(actual)) ? true : false);
+}
+ 
+}
+ 
+Src/main/resources
+ 
+application.properties
+ 
+spring.jpa.hibernate.ddl-auto=update spring.datasource.url=jdbc:mysql://localhost:3306/mywork spring.datasource.username=root spring.datasource.password=password
+ 
+logging.level.org.springframework.web: DEBUG spring.mvc.view.prefix=/WEB-INF/jsp/ spring.mvc.view.suffix=.jsp
+server.port=8080
+ 
+ 
+Open src/main/webapp/jsp Create authenticate.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+ 
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Authentication Page</title>
+</head>
+<h2>Login Page</h2>
+<body>
+welcome to the authentication page
+ 
+<form:form action="Auth" method="post" commandName="login">
+<label for="username"> Username:</label>
+<input name="username" id="username" type="text" placeholder="Username" required/>
+
+<label for="password">Password:</label>
+<input name="password" id="password" type="password" placholder="Password" required/>
+<input type="submit" name="Submit"/>
+</form:form>
+</body>
+</html>
+ 
+Create failure.jsp
+ 
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Failed Login</title>
+</head>
+<body>
+<h1>You failed your login pal!
+</h1><br/>
+<a href="/Auth">Attempt Login again</a>
+</body>
+</html>
+ 
+Create greeting.jsp
+ 
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Landing Page</title>
+</head>
+<h2>Welcome Page</h2>
+<body>
+you reached the landing page
+<a href="Auth">Login</a>
+</body>
+</html>
+ 
+Create success.jsp
+ 
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Successful Login Page</title>
+</head>
+<body>
+
+<h1>Successful Login</h1>
+</body>
+</html>
+ 
+ 
+ 
+Pushing the code to your GitHub repositories
+ 
+●Open your command prompt and navigate to the folder where you have created your files.
+ 
+cd <folder path>
+ 
+●Initialize your repository using the following command:
+ 
+git init
+ 
+●Add all the files to your git repository using the following command:
+ 
+git add .
+ 
+●Commit the changes using the following command:
+ 
+git commit . -m “Changes have been committed.”
+ 
+●Push the files to the folder you initially created using the following command:
+ 
+git push -u origin master
+
+
+
+PROJECT4:
+
+SPRING SECURITY CODE
+ 
+Open pom.xml
+ 
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<parent>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-parent</artifactId>
+<version>2.4.4</version>
+<relativePath /> <!-- lookup parent from repository -->
+</parent>
+<groupId>com.project</groupId>
+<artifactId>SpringSecurity</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<name>SpringSecurity</name>
+<description>Demo project for Spring Boot</description>
+<properties>
+<java.version>1.8</java.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jdbc</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-jersey</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-web-services</artifactId>
+
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-devtools</artifactId>
+<scope>runtime</scope>
+<optional>true</optional>
+</dependency>
+ 
+<dependency>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-starter-test</artifactId>
+<scope>test</scope>
+</dependency>
+<dependency>
+<groupId>org.springframework.security</groupId>
+<artifactId>spring-security-test</artifactId>
+<scope>test</scope>
+</dependency>
+ 
+<dependency>
+<groupId>org.apache.tomcat.embed</groupId>
+<artifactId>tomcat-embed-jasper</artifactId>
+<scope>provided</scope>
+</dependency>
+</dependencies>
+ 
+
+<build>
+
+<plugins>
+<plugin>
+
+ 
+ 
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-maven-plugin</artifactId>
+
+ 
+ 
+</build>
+ 
+</project>
+ 
+ 
+Src/main/java
+</plugin>
+</plugins>
+
+ 
+Create package com.project.SpringSecurity Create MvcConfig.java
+package com.project.SpringSecurity;
+
+import org.springframework.context.annotation.Configuration;
+ 
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry; import org.springframework.web.servlet.config.annotation.WebMvcConfigurer; @Configuration
+public class MvcConfig implements WebMvcConfigurer{
+ 
+public void addViewControllers(ViewControllerRegistry registry) { registry.addViewController("/index").setViewName("index"); registry.addViewController("/").setViewName("index"); registry.addViewController("/login").setViewName("login"); registry.addViewController("/welcome").setViewName("welcome");
+}
+ 
+}
+ 
+Create SpringSecurityApplication.java
+ 
+package com.project.SpringSecurity;
+ 
+import org.springframework.boot.SpringApplication;
+ 
+import org.springframework.boot.autoconfigure.SpringBootApplication; import org.springframework.data.jpa.repository.config.EnableJpaRepositories; import com.project.SpringSecurity.repositories.UsersRepository; @SpringBootApplication
+@EnableJpaRepositories(basePackageClasses = UsersRepository.class) public class SpringSecurityApplication {
+public static void main(String[] args) {
+ 
+SpringApplication.run(SpringSecurityApplication.class, args);
+ 
+}
+ 
+ 
+ 
+}
+ 
+Create WebSecurityConfig.java
+
+package com.project.SpringSecurity; import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+ 
+import org.springframework.beans.factory.annotation.Autowired; import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+ 
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder; import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity; import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService; import org.springframework.security.crypto.password.NoOpPasswordEncoder; import org.springframework.security.crypto.password.PasswordEncoder; @SuppressWarnings("deprecation")
+@Configuration @EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter { Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class); @Autowired
+UserDetailsService userDetailsService; @Bean
+public PasswordEncoder getPasswordEncoder() { return NoOpPasswordEncoder.getInstance();
+}
+ 
+@Autowired
+ 
+public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception { auth.userDetailsService(userDetailsService);
+
+}
+ 
+@Override
+ 
+protected void configure(HttpSecurity http) throws Exception { http.authorizeRequests()
+.antMatchers("/", "/index").permitAll()
+ 
+.anyRequest().authenticated()
+ 
+.and()
+ 
+.formLogin()
+ 
+.loginPage("/login")
+ 
+.defaultSuccessUrl("/welcome")
+ 
+.failureUrl("/login?error=true")
+ 
+.permitAll()
+ 
+.and()
+ 
+.logout()
+ 
+.logoutSuccessUrl("/login?logout=true")
+ 
+.invalidateHttpSession(true)
+ 
+.permitAll()
+ 
+.and()
+ 
+.csrf()
+ 
+.disable();
+ 
+}
+ 
+}
+ 
+Create package com.project.SpringSecurity.entities Create MyUserDetails.java
+package com.project.SpringSecurity.entities; import java.util.Collection;
+import org.springframework.security.core.GrantedAuthority;
+
+import org.springframework.security.core.userdetails.UserDetails; public class MyUserDetails implements UserDetails{
+private static final long serialVersionUID = 1L; private String userName;
+private String password; public MyUserDetails() {
+}
+ 
+public MyUserDetails(User user) { this.userName = user.getName(); this.password = user.getPassword();
+}
+ 
+@Override
+ 
+public Collection<? extends GrantedAuthority> getAuthorities() { return null;
+}
+ 
+@Override
+ 
+public String getPassword() {
+ 
+return password;
+ 
+}
+ 
+@Override
+ 
+public String getUsername() {
+ 
+return userName;
+ 
+}
+ 
+@Override
+ 
+public boolean isAccountNonExpired() { return true;
+}
+
+@Override
+ 
+public boolean isAccountNonLocked() { return true;
+}
+ 
+@Override
+ 
+public boolean isCredentialsNonExpired() { return true;
+}
+ 
+@Override
+ 
+public boolean isEnabled() { return true;
+}
+ 
+}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Create User.java
+ 
+package com.project.SpringSecurity.entities; import javax.persistence.Entity;
+import javax.persistence.GeneratedValue; import javax.persistence.GenerationType; import javax.persistence.Id;
+import javax.persistence.Table; @Entity
+@Table(name="user") public class User {
+
+@Id @GeneratedValue(strategy=GenerationType.AUTO) private Integer id;
+private String name; private String password; public User() {
+super();
+ 
+}
+ 
+public User(String name, String password) { super();
+this.name = name; this.password = password;
+}
+ 
+public String getName() {
+ 
+return name;
+ 
+}
+ 
+public void setName(String name) { this.name = name;
+}
+ 
+public String getPassword() {
+ 
+return password;
+ 
+}
+ 
+public void setPassword(String password) { this.password = password;
+}
+ 
+}
+ 
+Create package com.project.SpringSecurity.repositories
+
+Create UsersRepository.java
+ 
+package com.project.SpringSecurity.repositories;
+ 
+import java.util.Optional;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+import com.project.SpringSecurity.entities.User;
+ 
+@Repository
+public interface UsersRepository extends CrudRepository<User, Integer>{
+ 
+public Optional<User> findUserByName(String name);
+}
+ 
+ 
+Create package com.project.SpringSecurity.services Create MyUserDetailsService.java
+package com.project.SpringSecurity.services; import java.util.Optional;
+import  org.springframework.beans.factory.annotation.Autowired; import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException; import org.springframework.stereotype.Service;
+ 
+ 
+import com.project.SpringSecurity.entities.MyUserDetails; import com.project.SpringSecurity.entities.User;
+import com.project.SpringSecurity.repositories.UsersRepository; @Service
+public class MyUserDetailsService implements UserDetailsService { @Autowired
+UsersRepository userRepo;
+ 
+public User GetUserByName(String name) {
+ 
+Optional<User> user = userRepo.findUserByName(name);
+
+if(!user.isPresent()) throw new RuntimeException(); return user.get();
+}
+ 
+@Override
+ 
+public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+return new MyUserDetails(GetUserByName(username));
+ 
+}
+ 
+}
+ 
+Src/main/resources application.properties
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.naming-strategy=org.hibernate.cfg.ImprovedNamingStrategy spring.jap.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect spring.datasource.url=jdbc:mysql://localhost:3306/mywork spring.datasource.username=root
+spring.datasource.password=password logging.level.org.springframework.web: DEBUG spring.thymeleaf.prefix=/WEB-INF/jsp/ spring.thymeleaf.suffix=.jsp
+server.port=8080 server.error.whitelabel.enabled=false
+src/main/webapp/WEB-INF/jsp Create index.jsp
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<title>Greetings!</title>
+</head>
+<body>
+<h1>Welcome!</h1>
+<p>
+
+ 
+ 
 </body>
 </html>
 
+</p>
+Click <a th:href="@{/welcome}">here</a> to see a greeting.
 
+Create login.jsp
+ 
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+<title>Login</title>
+</head>
+<body>
+<div th:if="${param.error}"> Invalid username or password.
+</div>
+<div th:if="${param.logout}"> You have been logged out.
+</div>
+<form th:action="@{/login}" method="post">
+<div><label> User Name : <input type="text" name="username"/> </label></div>
+<div><label> Password: <input type="password" name="password"/> </label></div>
+<div><input type="submit" value="Sign In"/></div>
+</form>
+ 
+<a href="/">Return to Main Page</a>
+</body>
+</html>
+ 
+Create welcome.jsp
+ 
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+<title>Welcome!</title>
+</head>
+<body>
+<h1 th:inline="text">Hello [[${#httpServletRequest.remoteUser}]]!</h1>
+<form th:action="@{/logout}" method="post">
+<input type="submit" value="Sign Out"/>
+</form>
+</body>
+</html>
+ 
+Pushing the code to your GitHub repositories
+ 
+●Open your command prompt and navigate to the folder where you have created your files.
+ 
+cd <folder path>
+ 
+●Initialize your repository using the following command:
+
+git init
+ 
+●Add all the files to your git repository using the following command:
+ 
+git add .
+ 
+●Commit the changes using the following command:
+ 
+git commit . -m “Changes have been committed.”
+ 
+●Push the files to the folder you initially created using the following command:
+ 
+git push -u origin master
 
