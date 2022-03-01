@@ -1,1513 +1,1328 @@
-ASSESSMENT PROJECTS:
-
-FLYAWAY PROJECT:
-DAO Class
-
-
-package  com.flightbooking.database;
-
-import  java.sql.Connection; import  java.sql.DriverManager; import  java.sql.ResultSet; import  java.sql.SQLException; import  java.sql.Statement; import  java.util.ArrayList; import  java.util.HashMap; import  java.util.List;
-
-import  org.simplilearn.workshop.util.StringUtil;
-
-
-public  class  ConnectionUtil  { public  Connection  con=null; public  Statement  st=null;
-
-public  ConnectionUtil()  throws  ClassNotFoundException,  SQLException{ Class.forName("com.mysql.cj.jdbc.Driver");
-
-con=DriverManager.getConnection("jdbc:mysql://localhost:3306/flyaway","root ","9866");
-System.out.println("connection  established  with  database"); st=con.createStatement();
-}
-public  List<String[]>  getAvailableFlights(String  f,  String  t,  String  d)  {
-
-List<String[]>  flights=new  ArrayList<>();
-String   query="SELECT   *   FROM   flyaway.flights   where   fromf='"+f+"'   and tof='"+t+"'  and  datef='"+d+"'";
-try {
-ResultSet  rs=st.executeQuery(query);
-
-if(rs.next())  {
-String[]  flight=new  String[3]; flight[0]=rs.getString("name"); flight[1]=rs.getString("timef"); flight[2]=rs.getString("price"); flights.add(flight);
-return  flights;
-}
-
-
-}  catch  (SQLException  e)  { e.printStackTrace();
-}
-
-return  null;
-}
-
-public  HashMap<String,  String>  checkUser(String  email,  String  password)  { HashMap<String,String>  user=null;
- 
-String	query="select	*	from	user	where	email='"+email+"'	and password='"+password+"'";
-try {
-ResultSet  rs=st.executeQuery(query);
-if(rs.next())  {
-user=new  HashMap<>();
-user.put("name",  rs.getString("name")); user.put("email",rs.getString("email")); user.put("phno",rs.getString("phno"));
-user.put("adno",rs.getString("adno"));
-}
-return  user;
-}  catch  (SQLException  e)  { e.printStackTrace();
-}
-
-return  user;
-}
-
-public  boolean  insertUser(HashMap<String,  String>  user)  {
-
-String    query="INSERT    INTO    user    (email,    password,    name,    phno,    adno) values('"+user.get("email")+"','"+user.get("password")+"','"+user.get("name")+"',' "+user.get("phno")+"','"+user.get("adno")+"')";
-
-try {
-st.execute(query);
-return  true;
-}  catch  (SQLException  e)  { e.printStackTrace();
-}
-return  false;
-}
-
-public  boolean  checkAdmin(String  email,  String  password)  {
-
-try {
-ResultSet	rs=st.executeQuery("select	*	from	admin	where
-email='"+email+"'  and  password='"+password+"'");
-if(rs.next())
-return  true;
-}  catch  (SQLException  e)  { e.printStackTrace();
-}
-return  false;
-}
-
-public  boolean  changeAdminPassword(String  email,  String  password)  {
-
-try {
-ResultSet	rs=st.executeQuery("select	*	from	admin	where
-email='"+email+"'");
-if(!rs.next())  {
-return  false;
-}
-st.execute("update	admin	set	password='"+password+"'	where email='"+email+"'");
-return  true;
-}  catch  (SQLException  e)  {
- 
-e.printStackTrace();
-}
-return  false;
-}
-
-public  boolean  insertFlight(HashMap<String,  String>  flight)  throws  SQLException  {
-//PreparedStatement  stm=con.prepareStatement("INSERT  INTO  'flyaway.flights' ('name',  'from',  'to',  'date',  'time',  'price')  values(?,?,?,?,?,?)");
-//String  sql="INSERT  INTO  flights  ('name','from','to','date','time','price') values('"+flight.get("name")+"','"+flight.get("from")+"','"+flight.get("to")+"','"
-+flight.get("date")+"','"+flight.get("time")+"','"+flight.get("price")+"');"; String  query1  =  "INSERT  INTO  flights  (name,  fromf,  tof,  datef,  timef,  price)
-VALUES" + " ('"
-+  StringUtil.fixSqlFieldValue(flight.get("name"))  +  "',"  +  "  '"
-+  StringUtil.fixSqlFieldValue(flight.get("from"))  +  "',"  +  "  '"
-+  StringUtil.fixSqlFieldValue(flight.get("to"))  +  "',"  +  "  '"  + StringUtil.fixSqlFieldValue(flight.get("date"))  +  "',"  +  "  '"
-+  StringUtil.fixSqlFieldValue(flight.get("time"))  +  "',"  +  "  '"
-+  StringUtil.fixSqlFieldValue(flight.get("price"))  +  "')";
-
-//String	sql="INSERT	INTO	`flyaway`.`flights`	(`name`,	`fromf`,	`tof`,
-`datef`,  `timef`,  `price`)  VALUES  ('indigo',  'hyd',  'viz',  '2021-04-08',  '10:00', '2000');";
-System.out.println(flight.get("date")); System.out.println(flight.get("time"));
-//String  query1="INSERT  into  flyaway.flights  (name,from,to,date,time,price) values('indigo','hyd','viz','24-02-2022','10:30','2000')";
-try {
-//stm.execute(); st.execute(query1); return  true;
-}  catch  (SQLException  e)  { System.out.print("error"); e.printStackTrace();
-}
-return  false;
-}
-}
-
-
-
-SERVLETS
-
-
-
-FilghtInsert.java
- 
-
-package  com.flightbooking.servlets;
-
-import  javax.servlet.annotation.WebServlet; import  javax.servlet.http.HttpServlet; import  java.io.IOException;
-import  java.sql.SQLException;
-import  java.util.HashMap;
- 
-import  javax.servlet.ServletException;
-import  javax.servlet.http.HttpServletRequest; import  javax.servlet.http.HttpServletResponse; import  javax.servlet.http.HttpSession;
-
-import  com.flightbooking.database.ConnectionUtil;
-
-
-@WebServlet("/InsertFlight")
-public  class  FilghtInsert  extends  HttpServlet  {
-private  static  final  long  serialVersionUID  =  1L;
-protected  void  doPost(HttpServletRequest  request,  HttpServletResponse  response)
-throws  ServletException,  IOException  {
-
-String  name=request.getParameter("name"); String  from=request.getParameter("from"); String  to=request.getParameter("to");
-String  departure=request.getParameter("departure"); String  time=request.getParameter("time");
-String  price=request.getParameter("price");
-
-HashMap<String,String>  flight=new  HashMap<>(); flight.put("name",  name);
-flight.put("from",  from); flight.put("to",  to); flight.put("date",  departure); flight.put("time",  time); flight.put("price",  price);
-
-try {
-ConnectionUtil  dao=new  ConnectionUtil(); HttpSession  session=request.getSession(); if(dao.insertFlight(flight))  {
-
- 
-
-Successfully");
- 
-
-
-}
-else {
-
-}
- 
-session.setAttribute("message",  "Flight  Added
-
-
-
-session.setAttribute("message",  "Invalid  Details");
- 
-}  catch  (ClassNotFoundException  |  SQLException  e)  {
-//  TODO  Auto-generated  catch  block System.out.print("error"); e.printStackTrace();
-}
-response.sendRedirect("AdminHome.jsp");
-
-}
-
-}
- 
- 
-ForgotPassword.java
-package  com.flightbooking.servlets;
-
-import  javax.servlet.annotation.WebServlet;
-import  java.io.IOException;
-import  java.sql.SQLException;
-
-import  javax.servlet.ServletException;  import  javax.servlet.http.HttpServlet;  import  javax.servlet.http.HttpServletRequest;
-import  javax.servlet.http.HttpServletResponse;
-import  javax.servlet.http.HttpSession;
-
-import  com.flightbooking.database.ConnectionUtil; @WebServlet("/ForgotPassword")
-public  class  ForgotPassword  extends  HttpServlet  {
-private  static  final  long  serialVersionUID  =  1L;
-protected  void  doPost(HttpServletRequest  request,  HttpServletResponse  response)
-throws  ServletException,  IOException
-
-{
-
-String  email=request.getParameter("email"); String  password=request.getParameter("password");
-
- 
-try {
-
-
-
-
-Successfully");
- 
-
-ConnectionUtil  dao=new  ConnectionUtil(); HttpSession  session=request.getSession(); if(dao.changeAdminPassword(email,password))  {
-session.setAttribute("message",  "Password  Changed
- 
-}
-else {
-
-}
- 
-
-
-session.setAttribute("message",  "Invalid  Details");
- 
-}  catch  (ClassNotFoundException  |  SQLException  e)  {
-//  TODO  Auto-generated  catch  block e.printStackTrace();
-}
-response.sendRedirect("AdminPage.jsp");
-
-}
-
-}
- 
- 
-ListOfFlights.java
-
-package  com.flightbooking.servlets;
-
-
-import  java.io.IOException; import  java.sql.SQLException; import  java.util.List;
-import  javax.servlet.ServletException;  import  javax.servlet.annotation.WebServlet; import  javax.servlet.http.HttpServlet;  import  javax.servlet.http.HttpServletRequest;
-import  javax.servlet.http.HttpServletResponse;
-import  javax.servlet.http.HttpSession;
-import  com.flightbooking.database.ConnectionUtil; @WebServlet("/FlightList")
-public  class  ListOfFlights  extends  HttpServlet  {
-private  static  final  long  serialVersionUID  =  1L;
-
-protected  void  doPost(HttpServletRequest  request,  HttpServletResponse response)  throws  ServletException,  IOException  {
-
-String  from=request.getParameter("from"); String  to=request.getParameter("to");
-String  departure=request.getParameter("departure");
-
- 
-
-
-
-departure);
- 
-try {
- 
-
-ConnectionUtil  dao  =  new  ConnectionUtil(); List<String[]>  flights=dao.getAvailableFlights(from,  to,
-
-HttpSession  session=request.getSession(); session.setAttribute("flights",  flights);
- 
-
-}  catch  (ClassNotFoundException  |  SQLException  e)  {
-//  TODO  Auto-generated  catch  block e.printStackTrace();
-}
-response.sendRedirect("FlightList.jsp");
-}
-}
-
-
-LoginOfAdmin.java
- 
-
-package  com.flightbooking.servlets;
-
-import  java.io.IOException;
-import  java.sql.SQLException;
-import  javax.servlet.ServletException;  import  javax.servlet.annotation.WebServlet; import  javax.servlet.http.HttpServlet;  import  javax.servlet.http.HttpServletRequest;
- 
-import  javax.servlet.http.HttpServletResponse;
-import  javax.servlet.http.HttpSession;
-import  com.flightbooking.database.ConnectionUtil;
-
-@WebServlet("/AdminLogin")
-public  class  LoginOfAdmin  extends  HttpServlet  {
-private  static  final  long  serialVersionUID  =  1L;
-
-protected  void  doPost(HttpServletRequest  request,  HttpServletResponse  response)
-throws  ServletException,  IOException  {
-
-String  email=request.getParameter("email");
-String  password=request.getParameter("password");
-
-try {
-ConnectionUtil  dao=new  ConnectionUtil();
-
-if(dao.checkAdmin(email,password))  { response.sendRedirect("AdminHome.jsp");
- 
-}
-else {
-
-
-
-}
- 
-
-
-HttpSession  session=request.getSession(); session.setAttribute("message",  "Invalid  Details"); response.sendRedirect("AdminPage.jsp");
- 
-}  catch  (ClassNotFoundException  |  SQLException  e)  {
-//  TODO  Auto-generated  catch  block e.printStackTrace();
-}
-
-}
-
-}
-
-
-LoginOfUser.java
- 
-
-package  com.flightbooking.servlets;
-
-import  javax.servlet.annotation.WebServlet;
-import  java.io.IOException; import  java.sql.SQLException; import  java.util.HashMap;
-import  javax.servlet.ServletException;  import  javax.servlet.http.HttpServlet;  import  javax.servlet.http.HttpServletRequest;
-import  javax.servlet.http.HttpServletResponse;
-import  javax.servlet.http.HttpSession;
-
-import  com.flightbooking.database.ConnectionUtil; @WebServlet("/UserLogin")
-public  class  LoginOfUser  extends  HttpServlet  {
-private  static  final  long  serialVersionUID  =  1L;
-protected  void  doPost(HttpServletRequest  request,  HttpServletResponse  response)
-throws  ServletException,  IOException  {
- 
-String  email=request.getParameter("email"); String  password=request.getParameter("password");
-
- 
-try {
- 
-
-ConnectionUtil  dao=new  ConnectionUtil(); HashMap<String,String>  user=dao.checkUser(email,password); HttpSession  session=request.getSession();
-if(user!=null) {
-session.setAttribute("user",  user); response.sendRedirect("HomePage.jsp");
- 
-}
-else {
-
-
-}
- 
-
-
-session.setAttribute("message",  "Invalid  Details"); response.sendRedirect("UserPage.jsp");
- 
-}  catch  (ClassNotFoundException  |  SQLException  e)  {
-//  TODO  Auto-generated  catch  block e.printStackTrace();
-}
-
-}
-}
-
-
-
-
-
-Logout.java
- 
-
-package  com.flightbooking.servlets;
-
-import  javax.servlet.annotation.WebServlet;
-import  java.io.IOException;
-import  javax.servlet.ServletException;  import  javax.servlet.http.HttpServlet;  import  javax.servlet.http.HttpServletRequest;
-import  javax.servlet.http.HttpServletResponse;
-import  javax.servlet.http.HttpSession;
-
-
-@WebServlet("/Logout")
-public  class  Logout  extends  HttpServlet  {
-private  static  final  long  serialVersionUID  =  1L;
-protected  void  doGet(HttpServletRequest  request,  HttpServletResponse  response)
-throws  ServletException,  IOException  {
-
-HttpSession  session=request.getSession(); session.setAttribute("user",  null); response.sendRedirect("HomePage.jsp");
-}
-
-}
- 
- 
-RegistrationOfUser.java
-package  com.flightbooking.servlets;
-
-import  javax.servlet.annotation.WebServlet;
-import  java.io.IOException; import  java.sql.SQLException; import  java.util.HashMap;
-import  javax.servlet.ServletException;  import  javax.servlet.http.HttpServlet;  import  javax.servlet.http.HttpServletRequest;
-import  javax.servlet.http.HttpServletResponse;
-import  javax.servlet.http.HttpSession;
-import  com.flightbooking.database.ConnectionUtil; @WebServlet("/UserRegistration")
-public  class  RegistrationOfUser  extends  HttpServlet  {
-private  static  final  long  serialVersionUID  =  1L;
-protected  void  doPost(HttpServletRequest  request,  HttpServletResponse response)  throws  ServletException,  IOException  {
-String  email=request.getParameter("email"); String  password=request.getParameter("password"); String  name=request.getParameter("name");
-String  phno=request.getParameter("phno"); String  adno=request.getParameter("adno");
-
-HashMap<String,String>  user=new  HashMap<>(); user.put("email",  email); user.put("password",  password); user.put("name",  name);
-user.put("phno",  phno);
-user.put("adno",  adno);
-
- 
-try {
-
-
-
-
-
-Successfully");
- 
-
-ConnectionUtil  dao=new  ConnectionUtil(); boolean  result=dao.insertUser(user); HttpSession  session=request.getSession(); if(result)  {
-session.setAttribute("message",  "User  Added
- 
-}
-else {
-
-}
- 
-
-
-session.setAttribute("message","Invalid  Details");
- 
-}  catch  (ClassNotFoundException  |  SQLException  e)  {
-//  TODO  Auto-generated  catch  block e.printStackTrace();
-}
-response.sendRedirect("UserPage.jsp");
-}
-
-}
- 
- 
-StringUtil.java
-
-package  com.simplelearn.util;
-
-public  class  StringUtil  {
-public  static  String  fixSqlFieldValue(String  value)  {
-if  (value  ==  null)  {
-return  null;
-}
-int  length  =  value.length();
-StringBuffer  fixedValue  =  new  StringBuffer((int)(length*1.1));
-for(int  i  =  0  ;  i  <  length  ;i++)  { char  c  =  value.charAt(i); if ( c == '\'') {
-fixedValue.append("''");
-}else {
-fixedValue.append(c);
-}
-}
-return  fixedValue.toString();
-}
-
-public  static  String  encodeHtmlTag(String  tag)  {
-if (tag==null)
-return  null;
-int  length  =  tag.length();
-StringBuffer  encodedTag  =  new  StringBuffer(2  *  length);
-for(int  i  =  0  ;  i  <  length;i++)  { char  c  =  tag.charAt(i); if(c=='<')
-encodedTag.append("<");
-else  if(c=='>')
-encodedTag.append(">");
-else  if(c=='&')
-encodedTag.append("&amp;");
-else  if(c=='"')
-encodedTag.append("&quot;");
-else  if(c=='  ')
-encodedTag.append("&nbsp;");
- 
-else
-
-}
- 
-
-encodedTag.append(c);
- 
-return  encodedTag.toString();
-}
-}
-
-
-JSP
-
-AdminHome.jsp
- 
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
- 
-<!DOCTYPE  html>
-<html>
-<head>
-<meta  charset="ISO-8859-1">
-<title>Admin  Home</title>
-</head>
-<body >
-<br>
-<a  href=HomePage.jsp  style="color:black;text-decoration:none  ;font-size:35px;font- weight:bold;">Flight  Booking</a>
-<br><br>
-<h1>Insert  New  Flight  Details</h1>
-
-<div  style="border:3px  solid  black;width:25%;border-radius:20px;padding:20px" align="center">
-<form  action=InsertFlight  method=post>
-<label  for=name>Name  :-</label>  <input  type="text"  name=name  id=name
-/><br><br>
-<label  for=from>From  :-</label>  <input  type="text"  name=from  id=from
-/><br><br>
-<label  for=to>To  :-</label>  <input  type="text"  name=to  id=to  /><br><br>
-<label  for=departure>Departure  :-</label>  <input  type="date"  name=departure id=departure  /><br><br>
-<label  for=time>Time  :-</label>  <input  type="time"  name=time  id=time
-/><br><br>
-<label  for=price>Price  :-</label>  <input  type="text"  name=price  id=price
-/><br><br>
-<input  type=submit  value=submit  />  <input  type=reset  />
-</form>
-</div>
-<%
-String  message=(String)session.getAttribute("message");
-if(message!=null){
-%>
-<p  style="color:silver;"><%=message  %></p>
-<%
-session.setAttribute("message",  null);
-}
-%>
-</body>
-</html>
-
-
-
-AdminPage.jsp
- 
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
-<!DOCTYPE  html>
-<html>
-<head>
-<meta  charset="ISO-8859-1">
-<title>Admin  Page</title>
-</head>
-<body >
-<br>
- 
-<a  href=HomePage.jsp  style="color:black;text-decoration:none  ;font-size:35px;font- weight:bold;">Flight  Booking</a>
-<br><br>
-<h2>Admin  Login</h2>
-<div  style="border:3px  solid  black;width:25%;border-radius:20px;padding:20px" align="center">
-<form  action=AdminLogin  method=post>
-<label  for=email>Email  :-</label>  <input  type="email"  name=email  id=email
-/><br><br>
-<label  for=pass>Password  :-</label>  <input  type="password"  name=password id=pass /><br><br>
-<input  type=submit  value=submit  />  <input  type=reset  />
-</form>
-</div>
-<a  href=ForgotPassword.jsp  style="font-size:25;color:red;">Forgot  Password</a>
-
-<%
-String  message=(String)session.getAttribute("message");
-if(message!=null){
-%>
-<p  style="color:silver;"><%=message  %></p>
-<%
-session.setAttribute("message",  null);
-}
-%>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-BookFlight.jsp
- 
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
-<%@  page  import="java.util.*"  %>
-<!DOCTYPE  html>
-<html>
-<head>
-<meta  charset="ISO-8859-1">
-<title>FlyAway</title>
-</head>
-<body >
-<br>
-<a  href=HomePage.jsp  style="color:black;text-decoration:none  ;font-size:35px;font- weight:bold;">Flight  Booking</a>
-<br><br>
-
-<%
-@SuppressWarnings("unchecked")
+ASSESSEMENT PROJECTS:
+
+SPORTY SHOES CODE
+ 
+Open Pom.xml add Dependencies
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.5.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.project</groupId>
+	<artifactId>SportyShoes</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>SportyShoes</name>
+	<description>phase3 project for Spring Boot</description>
+	<properties>
+		<java.version>11</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		
+		<dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+            <version>2.1.0</version>
+            <scope>compile</scope>
+        </dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-batch</artifactId>
+        </dependency>
+        
+        
+         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        
+       <dependency>
+<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web-services</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+ 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
  
-HashMap<String,String> user=(HashMap<String,String>)session.getAttribute("user");
-if(user==null){
-response.sendRedirect("UserPage.jsp");
-}
-%>
-<p  align="center"	style="color:green;font-size:40px;font-weight:bold">Flight Booked Successfully</p>
-</body>
-</html>
-
-
-FlightList.jsp
- 
-
-
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
-<!DOCTYPE  html>
-<%@  page  import="java.util.*"  %>
-<html>
-<head>
-<meta  charset="ISO-8859-1">
-<title>Flight  List</title>
-</head>
-<body >
-<br>
-<a  href=HomePage.jsp  style="color:black;text-decoration:none;font-size:35px;font- weight:bold;">Flight  Booking</a>
-<br><br>
-<%
-@SuppressWarnings("unchecked")
-List<String[]>  flights=(List<String[]>)session.getAttribute("flights");
-if(flights!=null){
-%>
-
-<h1>Available  Flights</h1>
-
-<table border="1">
-<tr>
- 
-
-
-
-</tr>
-
-
-
-<%
-
-%>
- 
-<th>Name</th>
-<th>Time</th>
-<th>Price</th>
-
-
-
-
-
-for(String[]  flight:flights){
- 
-
-<tr>
-<td><%=flight[0]%></td>
-<td><%=flight[1]%></td>
-<td><%=flight[2]%></td>
-</tr>
- 
-</table>
-<a  href=BookFlight.jsp>Book  Now</a>
-<%
-}
-%>
-
-
-<%
-}
-else{
-%>
-<h1>There  are  no  available  flights</h1>
-<%
-}
-%>
-</body>
-</html>
-
-ForgotPassword.jsp
- 
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
-<!DOCTYPE  html>
-<html>
-<head>
-<meta  charset="ISO-8859-1">
-<title>Insert  title  here</title>
-</head>
-<body >
-<br>
-<a  href=HomePage.jsp  style="color:black;text-decoration:none  ;font-size:35px;font- weight:bold;">Flight  Booking</a>
-<br><br>
-<div  style="border:3px  solid  black;width:25%;border-radius:20px;padding:20px" align="center">
-<form  action=ForgotPassword  method=post>
-<label  for=email>Email  :-</label>  <input  type="email"  name=email  id=email
-/><br><br>
-<label  for=pass>New  Password  :-</label>  <input  type="password" name=password  id=pass  /><br><br>
-<input  type=submit  value=submit  />  <input  type=reset  />
-</form>
-</div>
-</body>
-</html>
-
-
-
-HomePage.jsp
- 
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
-<%@  page  import="java.util.*"  %>
-<!DOCTYPE  html>
-<html>
- 
-<head>
-<meta  charset="ISO-8859-1">
-<title>Flight  Booking</title>
-</head>
-<body >
-<h1>FlyAway</h1>
-
-<div  align="right">
-<a  href="AdminPage.jsp">Admin  Login</a>
-</div>
-
-<%
-@SuppressWarnings("unchecked") HashMap<String,String>
-user=(HashMap<String,String>)session.getAttribute("user");
-if(user!=null){
-%>
-<p>Welcome  <%=user.get("name")  %></p>
-<a  href="Logout">Logout</a>
-<%
-}else{
-%>
-<a  href=UserPage.jsp>User  Login</a>
-<%
-}
-%>
-<br><br>
-<div  style="border:5px  solid  black;width:25%;border-radius:20px;padding:20px" align="center">
-<form  action=FlightList  method=post>
-<label  for=from>From  :-</label>  <input  type=text  name=from id=from/><br><br>
-<label  for=to>To  :-</label>  <input  type=text  name=to  id=to/><br><br>
-<label  for=departure>Departure  :-</label>  <input  type=date  name=departure id=departure/><br><br>
-<label  for=travellers>Travellers  :-</label>  <input  type=number name=travellers  id=travellers/><br><br>
-<input  type=submit  value=Search  />  <input  type=reset  />
-</form>
-</div>
-</body>
-</html>
-
-
-
-UserPage.jsp
- 
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
-<!DOCTYPE  html>
-<html>
-<head>
-<meta  charset="ISO-8859-1">
-<title>Insert  title  here</title>
-</head>
-<body >
-<br>
- 
-<a  href=HomePage.jsp  style="color:black;text-decoration:none  ;font-size:35px;font- weight:bold;">Flight  Booking</a>
-<br><br>
-<h2>User  Login</h2>
-<div  style="border:2px  solid  black;width:25%;border-radius:20px;padding:20px" align="center">
-<form  action=UserLogin  method=post  >
-<table  >
-<tr>
-<td><label  for=email>Email</label><br></td>
-<td><input  type="email"  name=email  id=email  /></td>
-</tr>
-<tr>
-<td><label  for=pass>Password</label><br></td>
-<td><input  type="password"  name=password  id=pass  /></td>
-</tr>
-
-<tr>
-<td><input  type=submit  value=submit  /></td>
-<td><input  type=reset  /></td>
-</tr>
-</table>
-
-</form>
-</div>
-<br><br>
-<i>New  User-Create  account</i>
-<h4><a  href=UserRegistration.jsp  style="font-size:25;color:red;">Create Account</a></h4>
-
-<%
-String  message=(String)session.getAttribute("message");
-if(message!=null){
-%>
-<p  style="color:silver;"><%=message  %></p>
-<%
-session.setAttribute("message",  null);
-}
-%>
-</body>
-</html>
-
-
-
-UserRegistration.jsp
- 
-
-
-
-<%@  page  language="java"  contentType="text/html;  charset=ISO-8859-1"
-pageEncoding="ISO-8859-1"%>
-<!DOCTYPE  html>
-<html>
-<head>
-<meta  charset="ISO-8859-1">
-<title>Insert  title  here</title>
-</head>
-<body >
- 
-<br>
-<a  href=HomePage.jsp  style="color:black;text-decoration:none  ;font-size:35px;font- weight:bold;">Flight  Booking</a>
-<br><br>
-<div  style="border:3px  solid  black;width:25%;border-radius:20px;padding:20px" align="center">
-<form  action=UserRegistration  method=post>
-<label  for=email>Email  :-</label>  <input  type="email"  name=email  id=email
-/><br><br>
-<label  for=pass>Password  :-</label>  <input  type="password"  name=password id=pass /><br><br>
-<label  for=name>Name  :-</label>  <input  type="text"  name=name  id=name
-/><br><br>
-<label  for=phno>Phone  No.  :-</label>  <input  type="text"  name=phno  id=phno
-/><br><br>
-<label  for=adno>Aadhaar  No.  :-</label>  <input  type="text"  name=adno  id=adno
-/><br><br>
-<input  type=submit  value=submit  />  <input  type=reset  />
-</form>
-</div>
-</body>
-</html>
-
-
-
-
-
-
-
-
-web.xml
- 
-
-<?xml  version="1.0"  encoding="UTF-8"?>
-<web-app  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"  version="4.0">
-<display-name>Flight  Booking</display-name>
-<welcome-file-list>
-<welcome-file>UserRegistration.jsp</welcome-file>
-<welcome-file>AdminHome.jsp</welcome-file>
-<welcome-file>AdminPage.jsp</welcome-file>
-<welcome-file>FlightList.jsp</welcome-file>
-<welcome-file>BookFlight.jsp</welcome-file>
-<welcome-file>ForgotPassword.jsp</welcome-file>
-<welcome-file>HomePage.jsp</welcome-file>
-<welcome-file>UserPage.jsp</welcome-file>
-</welcome-file-list>
-</web-app>
- 
- 
-pom.xml
-
-<project  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
-<groupId>org.simplilearn.workshop</groupId>
-<artifactId>FlyAway</artifactId>
-<version>1.0-SNAPSHOT</version>
-<packaging>war</packaging>
-<name>FlyAway</name>
-<description>FlyAway  is  a  ticket-booking  portal  that  lets  people  book  flights  on their  website.</description>
-<properties>
-<maven.compiler.source>1.8</maven.compiler.source>
-<maven.compiler.target>1.8</maven.compiler.target>
-</properties>
-
-<build>
-<plugins>
-<plugin>
-<groupId>org.apache.maven.plugins</groupId>
-<artifactId>maven-war-plugin</artifactId>
-<version>2.6</version>
-<configuration>
-<failOnMissingWebXml>false</failOnMissingWebXml>
-</configuration>
-</plugin>
-</plugins>
-</build>
-<dependencies>
-<dependency>
-<groupId>javax.servlet.jsp</groupId>
-<artifactId>javax.servlet.jsp-api</artifactId>
-<version>2.3.3</version>
-<scope>provided</scope>
-</dependency>
-<dependency>
-<groupId>javax.servlet</groupId>
-<artifactId>javax.servlet-api</artifactId>
-<version>4.0.1</version>
-<scope>provided</scope>
-</dependency>
-<dependency>
-<groupId>mysql</groupId>
-<artifactId>mysql-connector-java</artifactId>
-<version>8.0.23</version>
-</dependency>
-
-</dependencies>
 </project>
-
-
-
-DEVELOPING A BACKEND:
-
-
-
-1.	                <?xml version="1.0" encoding="UTF-8"?>
-	<projectDescription>
-		<name>Administrative-Portal</name>
-		<comment></comment>
-		<projects>
-		</projects>
-		<buildSpec>
-			<buildCommand>
-				<name>org.eclipse.jdt.core.javabuilder</name>
-				<arguments>
-				</arguments>
-			</buildCommand>
-			<buildCommand>
-				<name>org.eclipse.wst.common.project.facet.core.builder</name>
-				<arguments>
-				</arguments>
-			</buildCommand>
-			<buildCommand>
-				<name>org.eclipse.wst.validation.validationbuilder</name>
-				<arguments>
-				</arguments>
-			</buildCommand>
-		</buildSpec>
-		<natures>
-			<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
-			<nature>org.eclipse.wst.common.modulecore.ModuleCoreNature</nature>
-			<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
-			<nature>org.eclipse.jdt.core.javanature</nature>
-			<nature>org.eclipse.wst.jsdt.core.jsNature</nature>
-		</natures>
-	</projectDescription>
-
-2.	   
-package com.simplilearn.admin;
-	
-
-	import java.sql.Connection;
-	import java.sql.ResultSet;
-	import java.sql.Statement;
-	import java.util.ArrayList;
-	import java.util.List;
-	
-
-	import javax.sql.DataSource;
-	
-
-	import com.simplilearn.models.Student;
-	import com.simplilearn.models.Subject;
-	import com.simplilearn.models.Teacher;
-	import com.simplilearn.models.Class;
-	
-
-	public class DbRetrieve {
-	
-
-		private DataSource dataSource;
-	
-
-		public DbRetrieve(DataSource dataSource) {
-			this.dataSource = dataSource;
-		}
-	
-
-		public List<Student> getStudents() {
-	
-
-			List<Student> students = new ArrayList<>();
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM students";
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					String firstName = myRs.getString("fname");
-					String lastName = myRs.getString("lname");
-					int age = myRs.getInt("age");
-					int aclass = myRs.getInt("class");
-	
-
-					// create new student object
-					Student tempStudent = new Student(id, firstName, lastName, age, aclass);
-	
-
-					// add it to the list of students
-					students.add(tempStudent);
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return students;
-	
-
-		}
-	
-
-		public List<Teacher> getTeachers() {
-	
-
-			List<Teacher> teachers = new ArrayList<>();
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM teachers";
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					String firstName = myRs.getString("fname");
-					String lastName = myRs.getString("lname");
-					int age = myRs.getInt("age");
-	
-
-					// create new student object
-					Teacher temp = new Teacher(id, firstName, lastName, age);
-	
-
-					// add it to the list of students
-					teachers.add(temp);
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return teachers;
-	
-
-		}
-	
-
-		public List<Subject> getSubjects() {
-	
-
-			List<Subject> subjects = new ArrayList<>();
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM subjects";
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					String name = myRs.getString("name");
-					String shortcut = myRs.getString("shortcut");
-	
-
-					// create new student object
-					Subject temp = new Subject(id, name,shortcut);
-	
-
-					// add it to the list of students
-					subjects.add(temp);
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return subjects;
-	
-
-		}
-	
-
-		public List<Class> getClasses() {
-	
-
-			List<Class> classes = new ArrayList<>();
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM classes";
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					int section = myRs.getInt("section");
-					int subject = myRs.getInt("subject");
-					int teacher = myRs.getInt("teacher");
-					String time = myRs.getString("time");
-	
-
-					Teacher tempTeacher = loadTeacher(teacher);
-					Subject tempSubject = loadSubject(subject);
-	
-
-					String teacher_name = tempTeacher.getFname() + " " + tempTeacher.getLname();
-	
-
-					// create new student object
-					Class temp = new Class(id, section, teacher_name, tempSubject.getName(), time);
-	
-
-					// add it to the list of students
-					classes.add(temp);
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return classes;
-	
-
-		}
-	
-
-		public Teacher loadTeacher(int teacherId) {
-	
-
-			Teacher theTeacher = null;
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM teachers WHERE id = " + teacherId;
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					String fname = myRs.getString("fname");
-					String lname = myRs.getString("lname");
-					int age = myRs.getInt("age");
-					theTeacher = new Teacher(id, fname, lname, age);
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return theTeacher;
-	
-
-		}
-	
-
-		public Subject loadSubject(int subjectId) {
-	
-
-			Subject theSubject = null;
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM subjects WHERE id = " + subjectId;
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					String name = myRs.getString("name");
-					String shortcut = myRs.getString("shortcut");
-	
-
-					theSubject = new Subject(id, name,shortcut);
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return theSubject;
-	
-
-		}
-	
-
-		public Class loadClass(int classId) {
-	
-
-			Class theClass = null;
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM clasess WHERE id = " + classId;
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					int section = myRs.getInt("section");
-					int subject = myRs.getInt("subject");
-					int teacher = myRs.getInt("teacher");
-					String time = myRs.getString("time");
-	
-
-					Teacher tempTeacher = loadTeacher(teacher);
-					Subject tempSubject = loadSubject(subject);
-	
-
-					String teacher_name = tempTeacher.getFname() + " " + tempTeacher.getLname();
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return theClass;
-	
-
-		}
-	
-
-		public List<Student> loadClassStudents(int classId) {
-	
-
-			List<Student> students = new ArrayList<>();
-	
-
-			Connection myConn = null;
-			Statement myStmt = null;
-			ResultSet myRs = null;
-	
-
-			try {
-	
-
-				// get a connection
-				myConn = dataSource.getConnection();
-	
-
-				// create sql stmt
-				String sql = "SELECT * FROM students WHERE class = " + classId;
-				myStmt = myConn.createStatement();
-	
-
-				// execute query
-				myRs = myStmt.executeQuery(sql);
-	
-
-				// process result
-				while (myRs.next()) {
-	
-
-					// retrieve data from result set row
-					int id = myRs.getInt("id");
-					String firstName = myRs.getString("fname");
-					String lastName = myRs.getString("lname");
-					int age = myRs.getInt("age");
-					int aclass = myRs.getInt("class");
-	
-
-					// create new student object
-					Student tempStudent = new Student(id, firstName, lastName, age, aclass);
-					students.add(tempStudent);
-	
-
-				}
-	
-
-			} catch (Exception e) {
-				// TODO: handle exception
-			} finally {
-				// close JDBC objects
-				close(myConn, myStmt, myRs);
-			}
-			return students;
-	
-
-		}
-	
-
-		private void close(Connection myConn, Statement myStmt, ResultSet myRs) {
-	
-
-			try {
-				if (myRs != null) {
-					myRs.close();
-				}
-				if (myStmt != null) {
-					myStmt.close();
-				}
-				if (myConn != null) {
-					myConn.close();
-				}
-	
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-	
-
-		}
-	
-
+ 
+Src/main/java
+By default Spring creates package com.project.SportyShoes
+Create GlobalExcptionHandler.java
+package com.project.SportyShoes;
+ 
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+@ControllerAdvice
+public class GlobalExceptionHandeler {
+	@ExceptionHandler(Exception.class)
+	public String handleException1(Exception e) {
+		e.printStackTrace();
+		return "Some error has occurred, please contact to administrator";
 	}
-3.	
+}
+Create SportyShoesApplication.java
+package com.project.SportyShoes;
+ 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+ 
+@SpringBootApplication
+public class SportyShoesApplication {
+ 
+	public static void main(String[] args) {
+		SpringApplication.run(SportyShoesApplication.class, args);
+	}
+ 
+}
+Create package com.project.SportyShoes.controller
+Create CategoriesController.java
+package com.project.SportyShoes.controller;
+ 
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+ 
+import com.project.SportyShoes.entity.Categories;
+import com.project.SportyShoes.service.CategoriesService;
+ 
+@Controller
+public class CategoriesController {
+	@Autowired
+	private CategoriesService catserv;
+	@RequestMapping("/listcat")
+	public String viewListPage(Model model)
+	{
+		List<Categories> listCategories= catserv.listAll();
+		model.addAttribute("listCategories", listCategories);
+		return "manage";
+	}
+	@RequestMapping("/new")
+	public String addNewCatPage(Model model)
+	{
+		Categories categories= new Categories();
+		model.addAttribute("categories", categories);
+		return "new_category";
+	}
+	@RequestMapping(value = "/save", method = RequestMethod.POST)
+	public String saveCategory(@ModelAttribute("categories") Categories categories, Model m) 
+	{   
+		catserv.save(categories);
+		List<Categories> listCategories= catserv.listAll();
+		m.addAttribute("listCategories", listCategories);
+	return "manage";
+	}	
+	@RequestMapping("/delete/{id}")
+	public String deleteCategory(@PathVariable(name ="id") long id, Model m)
+	{
+		catserv.delete(id);
+		List<Categories> listCategories= catserv.listAll();
+		m.addAttribute("listCategories", listCategories);
+		return "manage";
+	}
+	}
+Create LoginController.java
+package com.project.SportyShoes.controller;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+import com.project.SportyShoes.entity.Login;
+import com.project.SportyShoes.service.LoginService;
+@Controller
+public class LoginController {
+	@Autowired
+	private LoginService ls;
+@GetMapping("/")
+	public ModelAndView login() {
+	ModelAndView mav = new ModelAndView("login");
+	mav.addObject("user", new Login());
+	return mav;
+	}
+	@PostMapping("/adminlogin")
+	public String signUp(@ModelAttribute("user") Login user ) {
+		Login oauthUser = null;
+		System.out.println("from login"+ user);
+		if(user.getPassword() != "" ) {
+			System.out.println("logging in");	
+			oauthUser = ls.signgin(user.getUsername(), user.getPassword());
+			return "menu";
+		} else {
+			if (user.getNewPassword() != "" ) {
+				System.out.println("Changing new password");
+oauthUser = ls.changePassword(user.getUsername(), user.getNewPassword());
+				if(oauthUser == null ) {
+					return "invalid_credentials";
+				}
+				return "menu";
+			}
+			return "invalid_credentials";	
+		} 
+	}
+	//@GetMapping("/forgotPassword")
+	//public String update(@ModelAttribute("user") Login user){
+		//Login changepw = userService.updatePassword(user.);
+		//System.out.println(changepw);
+		//if(Objects.nonNull(changepw)) 
+		//{	
+		//return "redirect:/";
+		//} else {
+			//return "redirect:/login";
+		//}
+	//}
+	//{
+	//}
+	@RequestMapping("/logout")
+	public String logoutDo()
+	{
+		return "conform_logout";
+	}
+	//@PostMapping("/reset")
+	//public String resetPassword(@ModelAttribute("userchange") Login user) {
+		//System.out.println("form reset");
+		//Boolean changePassword = ls.changePassword(user.getUsername(), user.getPassword());
+		//if(!changePassword) {
+		//	return "usernotfound";
+		//}
+		//return "menu";	
+	//}
+	
+/*	@GetMapping("/forgotpw")
+	public String resetPassword1(@ModelAttribute("change") Login change ) {
+		System.out.println("from login"+ change);
+Boolean oauthUser = ls.changePassword(change.getUsername(), change.getPassword());
+		System.out.print(oauthUser);
+		if(Objects.nonNull(oauthUser)) 
+		{	
+		return "menu";
+		} else {
+		return "invalid_credentials";
+		}
+	}*/
+}
+Create  ProductController.java
+package com.project.SportyShoes.controller;
+ 
+import java.util.List;
+ 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+ 
+import com.project.SportyShoes.entity.Categories;
+import com.project.SportyShoes.entity.Product;
+import com.project.SportyShoes.service.ProductService;
+ 
+@Controller
+public class ProductController {
+	@Autowired
+	public ProductService prodserv;
+	
+	@RequestMapping("/listprod")
+	public String viewListProductPage(Model model)
+	{
+		List<Product> listProduct= prodserv.listAll();
+		model.addAttribute("listProduct", listProduct);
+		return "product_manage";
+		
+	}
+	
+	@RequestMapping("/newproduct")
+	public String addNewProductPage(Model model)
+	{
+		Product product= new Product();
+		model.addAttribute("product", product);
+		
+		return "new_product";
+	}
+	
+	@RequestMapping(value = "/saveproduct", method = RequestMethod.POST)
+	public String saveCategory(@ModelAttribute("product") Product product, Model md) 
+	{   
+		
+		prodserv.save(product);
+		List<Product> listProduct= prodserv.listAll();
+		md.addAttribute("listProduct", listProduct);
+		
+		return "product_manage";
+	
+	}
+	
+ 
+}
+ 
+Create  UserDetailsController.java
+package com.project.SportyShoes.controller;
+ 
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import com.project.SportyShoes.entity.UserDetails;
+import com.project.SportyShoes.service.UserDetailsService;
+ 
+@Controller
+public class UserDetailsController {
+	@Autowired
+	UserDetailsService userservice;
+	//@GetMapping("/list")
+	//public List<UserDetails> getUserDetails()
+	//{
+		 //List<UserDetails> listuser = new ArrayList<UserDetails>();
+		 //listuser= userservice.getUsers();
+		// return listuser;
+	//}
+	
+	@GetMapping("/index")
+	public String viewUserDetails(Model model)
+	{
+		List<UserDetails> listUsers= userservice.listAll();
+		System.out.println("listUsers" + listUsers);
+		model.addAttribute("listUsers",listUsers);
+		return "/index";
+	}
+//	@GetMapping("/find")
+//	public List<UserDetails> findusername(@RequestParam("username")  String username)
+//	{
+//		List<UserDetails> searchuser =new ArrayList<UserDetails>();
+//		searchuser = userservice.get(username);
+//		System.out.println("user"+ searchuser);
+//		return searchuser;
+//	}
+	@GetMapping("/user/{username}")
+	public String findUserName(@PathVariable(name="username")String username)
+	{	
+		System.out.println("i am here");
+		ModelAndView mav = new ModelAndView("find");
+		List<UserDetails> userdetails=userservice.get(username);
+		mav.addObject("userdetails", userdetails);
+		return "finduser";
+	}
+}
+Create package com.project.SportyShoes.entity
+Create BaseEntity.java
+package com.project.SportyShoes.entity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import javax.persistence.Column;
+import javax.persistence.EntityListeners;
+import javax.persistence.MappedSuperclass;
+import java.util.Date;
+@MappedSuperclass
+@Data
+@EqualsAndHashCode
+@EntityListeners(EntityListener.class)
+public abstract class BaseEntity {
+    @Column(nullable = false, updatable = false)
+    private Date createDate;
+    @Column(insertable = false)
+    private Date lastUpdateDate;
+public Date getCreateDate() {
+		return createDate;
+	}
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+	public Date getLastUpdateDate() {
+		return lastUpdateDate;
+	}
+	public void setLastUpdateDate(Date lastUpdateDate) {
+		this.lastUpdateDate = lastUpdateDate;
+	}
+}
+Create Categories.java
+package com.project.SportyShoes.entity;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+@Entity
+@Table(name="categories")
+public class Categories {
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private long id;
+	private String categoryName;
+	
+public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public Categories() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public Categories(long id, String categoryName) {
+		super();
+		this.id = id;
+		this.categoryName = categoryName;
+	}
+	@Override
+	public String toString() {
+		return "Categories [id=" + id + ", categoryName=" + categoryName + "]";
+	}
+	public String getCategoryName() {
+		return categoryName;
+	}
+	public void setCategoryName(String categoryName) {
+		this.categoryName = categoryName;
+	}
+	
+	/*public String women;
+	public String men;
+	public String kids;
+	public Categories() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public Categories(long id, String women, String men, String kids) {
+		super();
+		this.id = id;
+		this.women = women;
+		this.men = men;
+		this.kids = kids;
+	}
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public String getWomen() {
+		return women;
+	}
+	public void setWomen(String women) {
+		this.women = women;
+	}
+	public String getMen() {
+		return men;
+	}
+	public void setMen(String men) {
+		this.men = men;
+	}
+	public String getKids() {
+		return kids;
+	}
+	public void setKids(String kids) {
+		this.kids = kids;
+	}
+	@Override
+	public String toString() {
+		return "Categories [id=" + id + ", women=" + women + ", men=" + men + ", kids=" + kids + "]";
+	}*/
+ 
+}
+ 
+ 
+Create EntityLister.java
+package com.project.SportyShoes.entity;
+ 
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+ 
+import java.util.Date;
+ 
+public class EntityListener {
+    @PrePersist
+    public void prePersist(BaseEntity entity) {
+        Date now = new Date();
+        entity.setCreateDate(now);
+    }
+ 
+    @PreUpdate
+    public void preUpdate(BaseEntity entity) {
+        Date now = new Date();
+        entity.setLastUpdateDate(now);
+    }
+}
+Create Login.java
+package com.project.SportyShoes.entity;
+ 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+ 
+@Entity
+@Table(name="login")
+public class Login {
+	@Id
+	@GeneratedValue(strategy= GenerationType.IDENTITY)
+	private Long id;
+    private String username;
+    private String password;
+    private String newPassword;
+    
+	public String getNewPassword() {
+		return newPassword;
+	}
+	public void setNewPassword(String newPassword) {
+		this.newPassword = newPassword;
+	}
+	public Login(Long id, String username, String password, String newPassword) {
+		super();
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.newPassword = newPassword;
+	}
+	public Login() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public Login(Long id, String username, String password) {
+		super();
+		this.id = id;
+		this.username = username;
+		this.password = password;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	@Override
+	public String toString() {
+return "Login [id=" + id + ", username=" + username + ", password=" + password + ", newPassword=" + newPassword+ "]";
+	}
+    }
+Create Product.java
+package com.project.SportyShoes.entity;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+@Entity
+@Table(name="product")
+public class Product {
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private long id;
+	private String productName;
+	private String category;
+	private long price;
+	private Boolean status;
+	private String size;
+	
+	public Product() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public String getProductName() {
+		return productName;
+	}
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	public long getPrice() {
+		return price;
+	}
+	public void setPrice(long price) {
+		this.price = price;
+	}
+	public Boolean getStatus() {
+		return status;
+	}
+	public void setStatus(Boolean status) {
+		this.status = status;
+	}
+	public String getSize() {
+		return size;
+	}
+	public void setSize(String size) {
+		this.size = size;
+	}
+	@Override
+	public String toString() {
+return "Product [id=" + id + ", productName=" + productName + ", category=" + category + ", price=" + price+ ", status=" + status + ", size=" + size + "]";
+	}
+	public Product(long id, String productName, String category, long price, Boolean status, String size) {
+		super();
+		this.id = id;
+		this.productName = productName;
+		this.category = category;
+		this.price = price;
+		this.status = status;
+		this.size = size;
+	}
+	}
+ 
+Create UserDetails.java
+package com.project.SportyShoes.entity;
+ 
+import java.sql.Date;
+ 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+ 
+@Entity(name = "userdetails")
+@Table(name="userdetails")
+public class UserDetails extends BaseEntity {
+	@Id
+	@GeneratedValue(strategy= GenerationType.IDENTITY)
+	public long userId;
+	public String username;
+	public String emailId;
+	public String phone;
+	public String productPerchased;
+	public Date perchaseDate;
+	public String category;
+	public UserDetails() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public UserDetails(long userId, String username, String emailId, String phone, String productPerchased,
+			Date perchaseDate, String category) {
+		super();
+		this.userId = userId;
+		this.username = username;
+		this.emailId = emailId;
+		this.phone = phone;
+		this.productPerchased = productPerchased;
+		this.perchaseDate = perchaseDate;
+		this.category = category;
+	}
+	public long getUserId() {
+		return userId;
+	}
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getEmailId() {
+		return emailId;
+	}
+	public void setEmailId(String emailId) {
+		this.emailId = emailId;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+	public String getProductPerchased() {
+		return productPerchased;
+	}
+	public void setProductPerchased(String productPerchased) {
+		this.productPerchased = productPerchased;
+	}
+	public Date getPerchaseDate() {
+		return perchaseDate;
+	}
+	public void setPerchaseDate(Date perchaseDate) {
+		this.perchaseDate = perchaseDate;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	@Override
+	public String toString() {
+		return "UserDetails [userId=" + userId + ", username=" + username + ", emailId=" + emailId + ", phone=" + phone
+				+ ", productPerchased=" + productPerchased + ", perchaseDate=" + perchaseDate + ", category=" + category
+				+ "]";
+	}
+	}
+Create package com.project.SportyShoes.jdbc
+Create CategoriesRepository.java
+package com.project.SportyShoes.jdbc;
+ 
+import org.springframework.data.jpa.repository.JpaRepository;
+ 
+import com.project.SportyShoes.entity.Categories;
+ 
+public interface CategoriesRepository extends JpaRepository<Categories, Long> {
+ 
+}
+Create LoginRepository.java
+package com.project.SportyShoes.jdbc;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import com.project.SportyShoes.entity.Login;
+import lombok.val;
+@Repository
+public interface LoginRepository extends JpaRepository<Login, Long> {
+	Login findByUsernameAndPassword(String username, String password);
+	Login findByUsername(String username);
+	//Login findByEmail(String emailId);
+	//Login findByResetPassword(String resetPassword);
+	@Modifying
+	@Query("update Login log set log.password = :password where log.id = :id")
+void changePassword(@Param(value="password") String password, @Param(value = "id") Long id);
+}
+Create ProductRepository.java
+package com.project.SportyShoes.jdbc;
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.project.SportyShoes.entity.Product;
+public interface ProductRepository extends JpaRepository<Product, Long>{
+}
+Create UserDetailsRepository.java
+package com.project.SportyShoes.jdbc;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.project.SportyShoes.entity.UserDetails;
+@Repository
+public interface UserDetailsRepository extends JpaRepository<UserDetails, Long> {
+public List<UserDetails> findByusername(String username);
+}
+Create package com.project.SportyShoes.service
+Create CategoriesService.java
+package com.project.SportyShoes.service;
+import java.util.List;
+import javax.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.project.SportyShoes.entity.Categories;
+import com.project.SportyShoes.jdbc.CategoriesRepository;
+ 
+@Service
+@Transactional
+public class CategoriesService {
+	@Autowired
+	private CategoriesRepository catrepo;
+	public List<Categories> listAll()
+	{
+		return catrepo.findAll();
+	}
+	public void save(Categories categories)
+	{
+		 catrepo.save(categories);
+	}
+		public Categories get(long id)
+	{
+		return catrepo.findById(id).get();
+	}
+	public void delete(long id)
+	{
+		catrepo.deleteById(id);
+	}
+}
+Create LoginService.java
+package com.project.SportyShoes.service;
+ 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+ 
+import com.project.SportyShoes.entity.Login;
+import com.project.SportyShoes.entity.UserDetails;
+import com.project.SportyShoes.jdbc.LoginRepository;
+ 
+ 
+@Service
+public class LoginService{
+	@Autowired
+	private LoginRepository repo;
+	 public Login signgin(String username, String password) {
+		  Login user = repo.findByUsernameAndPassword(username, password);
+		  System.out.println("from service" + user);
+		  
+	  	return user;
+	  }
+	 
+	public Login changePassword(String username, String newpassword) {
+		// TODO Auto-generated method stub
+		Login uplogin = null;
+		Login user1 = repo.findByUsername(username);
+		if(user1 !=null ) {
+			System.out.println("user1" + user1);
+			repo.changePassword(newpassword, user1.getId());
+			uplogin = repo.findByUsername(username);
+			System.out.println("Password Changed");
+			return uplogin;
+		}
+		return null;
+	}
+}
+	// Login login=repo.findByEmail(email); 
+		// if(login != null)
+		 //{
+			// login.setResetPassword(resetPassword);
+			 //repo.save(login);
+		 //}
+		 //else {
+			//System.out.println("couldnot find the emailid");
+		//}
+	   // }
+	    //catch (Exception e) {
+		//e.printStackTrace(e.getMessage());
+	    //}
+    //}
+	 
+	//public Login getByResetPassword(String resetPassword)
+	//{	
+	  // return repo.findByResetPassword(resetPassword);
+	//}     		
+//}
+Create ProductService.java
+package com.project.SportyShoes.service;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.project.SportyShoes.entity.Categories;
+import com.project.SportyShoes.entity.Product;
+import com.project.SportyShoes.jdbc.ProductRepository;
+ 
+@Service
+public class ProductService {
+	@Autowired
+	public ProductRepository prodrepo;
+	
+	public List<Product> listAll()
+	{
+		return prodrepo.findAll();
+	}
+	
+	public void save(Product product)
+	{
+		prodrepo.save(product);
+	}
+ 
+}
+Create UserDetailsService.java
+package com.project.SportyShoes.service;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.project.SportyShoes.entity.UserDetails;
+import com.project.SportyShoes.jdbc.UserDetailsRepository;
+@Service
+public class UserDetailsService {
+	@Autowired
+	UserDetailsRepository userRepo;
+	//public List<UserDetails> listAll(){
+		//List<UserDetails> ud=new ArrayList<UserDetails>();
+		//ud= userRepo.findAll();
+		//System.out.println("userdetails "+ud);
+		//return ud;
+	//}
+	public List<UserDetails> listAll()
+	{
+	return userRepo.findAll();
+	}
+	public List<UserDetails> get(String username) {
+		return userRepo.findByusername(username);
+	}
+/*public List<UserDetails> searchUsers(String username) {
+		List<UserDetails> su= new ArrayList<UserDetails>();	
+		su= userRepo.findByusername(username);
+		return su;	
+	}*/
+}
+Src/main/resources
+Open application.properties
+spring.datasource.url=jdbc:mysql://localhost:3306/mywork
+spring.datasource.username=root
+spring.datasource.password=password
+#auto create tables fromspring boot 
+spring.jpa.generate-ddl=true
+spring.jpa.hibernate.ddl-auto = update
+server.port = 8080
+#logging.level.root=WARN
+logging.level.org.springframework.web: DEBUG
+spring.jpa.open-in-view=true
+spring.thymeleaf.cache=true
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.jpa.show-sql=true
+api.base.path = http://localhost:/mywork
+ 
+ 
+ 
+ 
+Create Folder templates and
+Create conform_logout.html.
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<a href="/">Conform Logout</a>
+ 
+</body>
+</html>
+Create finduser.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+ <div aling="center">
+    <H3>Find User By UserName</H3>
+    <br>
+    <form action="#" th:action="@{/find{username}" th:object="${userdetails}" method ="post">
+         <table border="0" cellpadding="10">
+            <tr>
+              <td>UserName:</td>
+                <td> <input type="text" th:feild="*{username}"/>
+                  </td>
+                   <tr>
+                    <td colspan="2"><button type="submit">Search</button> </td>
+                </tr>
+            </table>    
+    </form>
+ </div>
+</body>
+</html>
+Create Index.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>List OF User Details</title>
+</head>
+<body>
+<div align="center">
+<H1>List of All The Users</H1>
+<br/>
+ <table border="1" cellpadding="10">
+   <thead>
+     <tr>
+        <th>UserId</th>
+        <th>UserName</th>
+        <th>email Id</th>
+        <th>Phone</th>
+        <th>Product Perchased</th>
+        <th>Perchase Date</th>
+        <th>Category</th>
+        <th>Create Date</th>
+        <th>Last Update Date</th>
+      </tr>
+     </thead>
+     <tbody>
+       <tr th:each="userdetails : ${listUsers}">
+          <td th:text="${userdetails.userId}">UserId</td>
+          <td th:text="${userdetails.username}">UserName</td>
+          <td th:text="${userdetails.emailId}">email Id</td>
+          <td th:text="${userdetails.phone}">Phone</td>
+          <td th:text="${userdetails.productPerchased}">Product Perchased</td>
+          <td th:text="${userdetails.perchaseDate}">Perchase Date</td>
+          <td th:text="${userdetails.category}">Category</td>
+          <td th:text="${userdetails.createDate}">Create Date</td>
+          <td th:text="${userdetails.lastUpdateDate}">Last Update Date</td>
+        </tr>
+     </tbody>
+     </table>
+     <a href="/logout">LogOut</a>
+   </div>
+</body>
+</html>
+Create invalid_credentials.html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h1>Invalid Credentials</h1><br>
+<br>
+<a href="/">try Again</a>
+ 
+</body>
+</html>
+Create login.html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<div aling="center">
+<h2>Wellcome To Sporty Shoes Web App!!!</h2>
+ 
+<table width="100%" height="100%" border="0" cellpadding="0"align="center">
+<tr>
+<td align="center" valign="middle">
+<table class="table-bordered" width="350" border="0" cellpadding="3"cellspacing="3" bgcolor="#ffffff">
+<form action="#" th:action="@{/adminlogin}" th:object="${user}"method="post">
+<tr>
+<td height="25" colspan="2" align="left" valign="middle"bgcolor="#ffffff" class="style2">
+<div align="center">
+<strong>Admin Login</strong>
+</div>
+</td>
+</tr>
+<tr>
+<td>Username</td>
+<td><input type="text" th:field="*{username}"
+class="form-control" /></td>
+</tr>
+<tr>
+<td>Password</td>
+<td><input type="password" th:field="*{password}"
+class="form-control" /></td>
+</tr>
+<tr>
+<td>New Password</td>
+<td><input type="password" th:field="*{newPassword}"
+class="form-control" /></td>
+</tr>
+<tr>
+<td colspan="2"><button type="submit" class="btn btn-info"align="right">login/changepassword</button></td>
+</tr>						
+</form>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+Create manage.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Manage Category Unit<</title>
+</head>
+<body>
+<div align="center">
+<h1>Categories List</h1><br>
+<div align="center">
+<a href="/new">Create New Category</a>
+</div>
+<table border="1" cellpadding="10"><thead><tr>
+<th>id</th>
+<th>Name</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr th:each="categories : ${listCategories}">
+<td th:text="${categories.id}">id</td>
+<td th:text="${categories.categoryName}">Name</td>
+<td><a th:href="@{/delete/{id}(id=${categories.id})}">Delete</a></td>
+</tr>
+</tbody>
+</table>
+<a href="/logout">LogOut</a>
+</div>
+</body>
+</html>
+Create menu.html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h1>Admin Work System</h1>
+<a href="/listcat">Click here to Manage Categories</a><br>
+<a href="/index">Click here to view the list of users</a><br>
+<a href="/listprod">Click here to view the products List</a><br>
+<br>
+<br>
+<a href="/logout">LogOut</a>
+</body>
+</html>
+ 
+	
+Create new_category.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Create New Category</title>
+</head>
+<body>
+<div aling="center">
+ <h1>Create New Category</h1>
+    <br/>
+     <form action="#" th:action="@{/save}" th:object="${categories}"
+            method="post">
+ 
+            <table border="0" cellpadding="10">
+                <tr>
+                    <td>Name:</td>
+                    <td><input type="text" th:field="*{categoryName}" /></td>
+                </tr>                            
+                <tr>
+                    <td colspan="2"><button type="submit">Save</button> </td>
+                </tr>
+            </table>
+        </form>
+        <a href="/logout">LogOut</a>
+  </div>
+</body>
+</html>
+Create new_product.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Create New Category</title>
+</head>
+<body>
+<div aling="center">
+ <h1>Create New Product</h1>
+    <br/>
+     <form action="#" th:action="@{/saveproduct}" th:object="${product}"
+            method="post">
+ 
+            <table border="0" cellpadding="10">
+                <tr>
+                    <td>Product Name:</td>
+                    <td><input type="text" th:field="*{productName}" /></td>
+                </tr>  
+                <tr>
+                    <td>Category:</td>
+                    <td><input type="text" th:field="*{category}" /></td>
+                </tr> 
+                <tr>
+                    <td>Price:</td>
+                    <td><input type="text" th:field="*{price}" /></td>
+                </tr> 
+                <tr>
+                    <td>Status:</td>
+                    <td><input type="text" th:field="*{status}" /></td>
+                </tr> 
+                <tr>
+                    <td>size:</td>
+                    <td><input type="text" th:field="*{size}" /></td>
+                </tr> 
+                                        
+                <tr>
+                    <td colspan="2"><button type="submit">Save</button> </td>
+                </tr>
+            </table>
+        </form>
+   
+ 
+ 
+</div>
+</body>
+</html>
+Create product_manage.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Manage Product Unit</title>
+</head>
+<body>
+<div align="center">
+<h1>Products List</h1><br>
+<h2><b><a href="/newproduct">Create New ProductList</a></b></h2>
+<table border="1" cellpadding="10">
+<thead>
+<tr>
+<th>Product id</th>
+<th>Product Name</th>
+<th>Category</th>
+<th>Price</th>
+<th>Status</th>
+<th>size</th>
+</tr>
+</thead>
+<tbody>
+<tr th:each="product : ${listProduct}">
+<td th:text="${product.id}">Product id</td>
+<td th:text="${product.productName}">Product Name</td>
+<td th:text="${product.category}">Category</td>
+<td th:text="${product.price}">Price</td>
+<td th:text="${product.status}">Status</td>
+<td th:text="${product.size}">size</td>
+</tr></tbody>
+</table>
+<a href="/logout">LogOut</a>
+</div>
+</body>
+</html>
+                 
+Create relogin.html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<div aling="center">
+<h2>Change Password!!!</h2>
+<table width="100%" height="100%" border="0" cellpadding="0"align="center">
+<tr>
+<td align="center" valign="middle">
+<table class="table-bordered" width="350" border="0" cellpadding="3"cellspacing="3" bgcolor="#ffffff">
+<form action="#" th:action="@{/}" th:object="${userchange}"method="post">
+<tr>
+<td height="25" colspan="2" align="left" valign="middle"bgcolor="#ffffff" class="style2">
+<div align="center">
+<strong>Change Password</strong>
+</div>
+</td>
+</tr>
+<tr>
+<td>Username</td>
+<td><input type="text" th:field="*{username}" name="username" /></td>
+</tr>
+<tr>
+<td>New Password</td>
+<td><input type="password" th:field="*{password}" name="password" /></td>
+</tr>
+<tr>
+<td colspan="2"><button type="submit" class="btn btn-info"align="right">Change Password</button></td>
+</tr>						
+</form>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+Create usernotfound.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>User Not Found</title>
+</head>
+<body>
+	<h1>User not found !</h1>
+</body>
+</html>
+Pushing the code to your GitHub repositories
+●Open your command prompt and navigate to the folder where you have created your files.
+cd <folder path>
+●Initialize your repository using the following command:
+git init
+●Add all the files to your git repository using the following command:
+git add .
+●Commit the changes using the following command:
+git commit .  -m “Changes have been committed.”
+●Push the files to the folder you initially created using the following command:
+git push -u origin master
